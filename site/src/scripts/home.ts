@@ -352,16 +352,20 @@ function drawXray(host: HTMLElement, x: Xray) {
       svgEl("text", { x: sx(t), y: H - 8, class: "time-label", "text-anchor": "middle" }, svg).textContent = isMidnight ? "חצות" : formatClock(new Date(t));
   }
   svgEl("text", { x: W - padR, y: H - 8, class: "time-label now", "text-anchor": "end" }, svg).textContent = "עכשיו";
-  // Day names above the plot, centred in their part of the window. Right after midnight
-  // "today" is a sliver, so its name sits at the right edge instead.
-  const day = (label: string, a: number, b: number) => {
+  // The date above each part, centred: "30 בספטמבר", or "30.9" when the part is narrow.
+  // Right after midnight today is a sliver, so its date sits at the right edge instead.
+  const day = (a: number, b: number) => {
     if (b - a < 0.5 * HOUR) return;
-    const wide = sx(b) - sx(a) > 60;
+    const mid = a + (b - a) / 2;
+    const long = new Date(mid).toLocaleDateString("he-IL", { timeZone: TZ, day: "numeric", month: "long" });
+    const short = new Date(mid).toLocaleDateString("he-IL", { timeZone: TZ, day: "numeric", month: "numeric" }).replace(/\.\d{4}$/, "");
+    const width = sx(b) - sx(a);
+    const wide = width > 60;
     const atEnd = !wide && b === t1;
-    svgEl("text", { x: wide ? (sx(a) + sx(b)) / 2 : atEnd ? W - padR : sx(a) + 4, y: padT - 8, class: "day-label", "text-anchor": wide ? "middle" : atEnd ? "end" : "start" }, svg).textContent = label;
+    svgEl("text", { x: wide ? (sx(a) + sx(b)) / 2 : atEnd ? W - padR : sx(a) + 4, y: padT - 8, class: "day-label", direction: "rtl", "text-anchor": wide ? "middle" : atEnd ? "start" : "end" }, svg).textContent = width > 100 ? long : short;
   };
-  if (today0 > t0) day("אתמול", t0, today0);
-  day("היום", Math.max(today0, t0), t1);
+  if (today0 > t0) day(t0, today0);
+  day(Math.max(today0, t0), t1);
 
   const pts = series.map(([t, f]) => [sx(new Date(t).getTime()), sy(f)] as const);
   svgEl("path", { d: "M" + pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join("L"), class: "xray-line" }, svg);
