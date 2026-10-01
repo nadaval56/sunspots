@@ -215,3 +215,69 @@ def collect_today(errors: list[str]) -> dict:
     except Exception as e:  # noqa: BLE001
         errors.append(f"xrays: {e}")
     return out
+
+
+# --- cycle.json (BRIEF §7.3.5) ---------------------------------------------------------
+
+CYCLE_START = "2008-12"  # minimum between cycles 23 and 24 (SIDC), so cycles 24 and 25 are both on the chart
+
+
+def _num(v) -> float | None:
+    """NOAA uses -1 for "not available yet" (e.g. the smoothed value of the last 6 months)."""
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    return None if f < 0 or f != f else round(f, 1)
+
+
+def _month(row: dict) -> str | None:
+    t = str(_first(row, "time-tag", "time_tag", default=""))[:7]
+    return t if re.fullmatch(r"\d{4}-\d{2}", t) else None
+
+
+def build_cycle(observed: list[dict] | None, predicted: list[dict] | None, start: str = CYCLE_START) -> dict:
+    """Monthly observed + 13-month smoothed SSN since `start`, and the NOAA prediction with its range.
+
+    Rows are [YYYY-MM, values...]; a missing value is null."""
+    obs = []
+    for r in observed or []:
+        if not isinstance(r, dict):
+            continue
+        m = _month(r)
+        if not m or m < start:
+            continue
+        obs.append([m, _num(_first(r, "ssn", "sunspot_number")), _num(_first(r, "smoothed_ssn"))])
+    obs.sort(key=lambda x: x[0])
+    pred = []
+    for r in predicted or []:
+        if not isinstance(r, dict):
+            continue
+        m = _month(r)
+        v = _num(_first(r, "predicted_ssn"))
+        if not m or v is None:
+            continue
+        pred.append([m, v, _num(_first(r, "low_ssn")), _num(_first(r, "high_ssn"))])
+    pred.sort(key=lambda x: x[0])
+    return {
+        "observed_fields": ["month", "ssn", "smoothed_ssn"],
+        "observed": obs,
+        "predicted_fields": ["month", "predicted_ssn", "low_ssn", "high_ssn"],
+        "predicted": pred,
+        "source": "NOAA SWPC: observed-solar-cycle-indices.json, predicted-solar-cycle.json",
+    }
+
+
+def collect_cycle(errors: list[str]) -> dict | None:
+    observed = predicted = None
+    try:
+        observed = _get_json(URLS["cycle_observed"])
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"cycle_observed: {e}")
+    try:
+        predicted = _get_json(URLS["cycle_predicted"])
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"cycle_predicted: {e}")
+    if observed is None and predicted is None:
+        return None
+    return build_cycle(observed, predicted)

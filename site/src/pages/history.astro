@@ -1,10 +1,227 @@
 ---
 import Base from "../layouts/Base.astro";
-import Upcoming from "../components/Upcoming.astro";
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+
+interface Event {
+  when: string;
+  title: string;
+  body: string[];
+}
+const EVENTS: Event[] = [
+  {
+    when: "דצמבר 1610",
+    title: "הריוט משרטט כתמים, ולא מפרסם",
+    body: [
+      "המתמטיקאי האנגלי תומס הריוט כיוון טלסקופ אל השמש ושרטט אותה עם כתמים. השרטוט במחברת שלו מתוארך ל-8 בדצמבר 1610, וזה השרטוט הטלסקופי המוקדם ביותר של כתמי שמש שידוע לנו. הריוט המשיך לשרטט כתמים עד 1612, אבל לא פרסם דבר.",
+      "הוא הסתכל בשמש ישירות דרך הטלסקופ, ורק בשעה הראשונה אחרי הזריחה, כשהערפל מעל נהר התמזה עמעם אותה. אל תנסו את זה: ראו את העמוד על תצפית בטוחה.",
+      "החיבור המודפס הראשון על כתמים שנצפו בטלסקופ הוא של יוהנס פבריציוס, שיצא לאור בוויטנברג שבגרמניה ב-1611.",
+    ],
+  },
+  {
+    when: "1612–1613",
+    title: "הוויכוח בין גלילאו לשיינר",
+    body: [
+      "כריסטוף שיינר, ישועי ופרופסור למתמטיקה באינגולשטדט, שלח בסוף 1611 שלושה מכתבים על הכתמים לסוחר מרקוס ולזר באאוגסבורג. ולזר הדפיס אותם בתחילת 1612 בשם הבדוי <i lang=\"la\" dir=\"ltr\">Apelles latens post tabulam</i>, \"אפלס המסתתר מאחורי התמונה\", על שם צייר יווני מפורסם. שיינר טען שהכתמים הם גופים קטנים שמקיפים את השמש, כך שהשמש עצמה נשארת שלמה וללא פגם.",
+      "גלילאו גליליי ענה בשלושה מכתבים לוולזר, מ-4 במאי, מ-14 באוגוסט ומ-1 בדצמבר 1612. הוא הראה שהכתמים נמצאים על פני השמש או צמוד אליהם: הם מתקצרים ומאטים ליד שולי הדיסקה, בדיוק כמו נקודה מצוירת על כדור מסתובב. מכאן הסיק שהשמש מסתובבת סביב עצמה, בערך פעם בחודש. המכתבים יצאו לאור ברומא ב-1613, בספר <i lang=\"it\" dir=\"ltr\">Istoria e dimostrazioni intorno alle macchie solari</i>.",
+      "את הטיעון של גלילאו אפשר לבדוק בעצמכם במעבדת הסיבוב, כולל המחוון \"מה טען שיינר\". בהמשך שינה שיינר את דעתו וקיבל שהכתמים נמצאים על השמש עצמה.",
+    ],
+  },
+  {
+    when: "1612",
+    title: "קסטלי ושיטת ההקרנה",
+    body: [
+      "בנדטו קסטלי, נזיר בנדיקטיני ותלמיד של גלילאו, מצא דרך לראות את השמש בלי להסתכל בה: מכוונים את הטלסקופ לשמש, ומחזיקים מאחורי העינית דף לבן. על הדף מופיעה תמונה של הדיסקה, ואפשר לסמן עליה את הכתמים בעיפרון.",
+      "גלילאו תיאר את השיטה במכתבו השני לוולזר, ב-14 באוגוסט 1612, וייחס אותה לקסטלי. בזכותה הוא יכול היה לצייר את השמש באמצע היום, יום אחרי יום. הציורים מיוני ויולי 1612 שבהמשך העמוד נעשו כך.",
+    ],
+  },
+  {
+    when: "1645–1715",
+    title: "מינימום מאונדר",
+    body: [
+      "במשך כ-70 שנה כמעט לא נרשמו כתמים על השמש, אף שאסטרונומים צפו בה. האסטרונום הבריטי אדוארד וולטר מאונדר הסב את תשומת הלב לתקופה הזו בסוף המאה ה-19, וג'ון אדי בדק אותה מחדש ב-1976 והראה שהשמש באמת הייתה שקטה במיוחד.",
+      "התקופה הזו חופפת לחלק מ\"עידן הקרח הקטן\", שבו היו חורפים קרים במיוחד באירופה. האם השמש השקטה הייתה הסיבה? זו עדיין שאלה פתוחה, וכנראה היו לקור גם סיבות אחרות.",
+    ],
+  },
+  {
+    when: "1843",
+    title: "שוואבה מגלה את המחזור",
+    body: [
+      "היינריך שוואבה, רוקח מדסאו שבגרמניה, צפה בשמש כמעט כל יום שבו היו שמיים בהירים, החל מ-1826. הוא חיפש כוכב לכת שאולי מסתובב קרוב יותר לשמש ממרקורי, ויעבור מול הדיסקה. את כוכב הלכת הוא לא מצא, אבל אחרי 17 שנים של ספירה גילה שמספר הכתמים עולה ויורד במחזור של כעשר שנים. הוא דיווח על התגלית בסיכום התצפיות שלו לשנת 1843.",
+      "מדידות מאוחרות יותר הראו שהמחזור הוא בממוצע כ-11 שנים. מה רואים בו היום? ראו את העמוד מחזור השמש.",
+    ],
+  },
+  {
+    when: "1 בספטמבר 1859",
+    title: "אירוע קרינגטון",
+    body: [
+      "האסטרונום האנגלי ריצ'רד קרינגטון שרטט קבוצת כתמים גדולה, ופתאום ראה שני כתמי אור בוהקים מופיעים לידה. הם נעלמו אחרי כחמש דקות. ריצ'רד הודג'סון ראה את אותו הבזק באופן עצמאי. זו ההתפרצות הראשונה על השמש שתועדה.",
+      "פחות מיממה אחר כך הגיעה לכדור הארץ סערה מגנטית עצומה. זוהר קוטבי נראה גם הרחק מאזורי הקוטב, למשל באיים הקריביים, ורשתות הטלגרף השתבשו במקומות רבים. זו אחת הסערות המגנטיות החזקות שנמדדו אי פעם.",
+    ],
+  },
+];
 ---
 
-<Base title="היסטוריה">
-  <Upcoming title="היסטוריה" milestone="M5">
-    <p>מהשרטוטים של הריוט וגלילאו ועד מחזור 11 השנים: איך גילו שלשמש יש כתמים, ומה הם מלמדים עליה.</p>
-  </Upcoming>
+<Base title="היסטוריה" description="איך גילו את כתמי השמש: הריוט, גלילאו ושיינר, קסטלי, מינימום מאונדר, שוואבה ואירוע קרינגטון. וציור של גלילאו מ-1612 לצד תמונה של SDO.">
+  <article class="wrap content-page">
+    <header class="page-head">
+      <h1>היסטוריה של כתמי השמש</h1>
+      <p class="lede">
+        אנשים ראו כתמים על השמש בעין עוד בעת העתיקה, כשהשמש הייתה מעומעמת מאוד באובך או בשקיעה. אבל רק אחרי המצאת הטלסקופ אפשר היה לעקוב
+        אחריהם יום אחר יום, ולהבין מה הם.
+      </p>
+      <p class="banner-warn">אסור להסתכל בשמש בעין או דרך משקפת או טלסקופ, גם בשקיעה. <a href={`${base}safety/`}>איך צופים בשמש בבטחה</a>.</p>
+    </header>
+
+    <section class="block" aria-labelledby="timeline-title">
+      <h2 id="timeline-title">ציר זמן</h2>
+      <ol class="timeline">
+        {
+          EVENTS.map((e) => (
+            <li>
+              <p class="when">{e.when}</p>
+              <div class="event">
+                <h3>{e.title}</h3>
+                {e.body.map((p) => <p set:html={p} />)}
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="block" aria-labelledby="compare-title">
+      <h2 id="compare-title">גלילאו מול SDO</h2>
+      <p>
+        בעמודה השמאלית: ציורים של גלילאו מיוני 1612, כפי שהודפסו בספר מ-1613. בעמודה הימנית: תמונות של הלוויין SDO מספטמבר 2026. בכל עמודה עובר יום אחד בין
+        התמונה העליונה לתחתונה.
+      </p>
+
+      <div class="pairs">
+        <figure class="pair">
+          <div class="pair-row">
+            <figure class="sdo">
+              <img src={`${base}lab-archive/20260923.jpg`} width="760" height="760" loading="lazy" decoding="async"
+                alt="תמונת השמש של SDO מ-23 בספטמבר 2026: דיסקה כתומה עם קבוצת כתמים כהים מימין למרכז." />
+              <figcaption>23 בספטמבר 2026</figcaption>
+            </figure>
+            <figure class="drawing">
+              <img src={`${base}history/galileo-1612-06-28.jpg`} width="760" height="760" loading="lazy" decoding="async"
+                alt="ציור של גלילאו מ-28 ביוני 1612: עיגול השמש עם כמה קבוצות כתמים, ובהן קבוצה מוארכת שמסומנת R." />
+              <figcaption>28 ביוני 1612</figcaption>
+            </figure>
+          </div>
+          <div class="pair-row">
+            <figure class="sdo">
+              <img src={`${base}lab-archive/20260924.jpg`} width="760" height="760" loading="lazy" decoding="async"
+                alt="תמונת השמש של SDO מ-24 בספטמבר 2026: אותה קבוצת כתמים זזה ימינה, לכיוון השוליים." />
+              <figcaption>24 בספטמבר 2026</figcaption>
+            </figure>
+            <figure class="drawing">
+              <img src={`${base}history/galileo-1612-06-29.jpg`} width="760" height="760" loading="lazy" decoding="async"
+                alt="ציור של גלילאו מ-29 ביוני 1612: הקבוצה R זזה ימינה, והכתם M שהיה בשוליים הימניים נעלם." />
+              <figcaption>29 ביוני 1612</figcaption>
+            </figure>
+          </div>
+        </figure>
+      </div>
+
+      <div class="prose">
+        <p>
+          <strong>מה לחפש:</strong> בציורים של גלילאו הקבוצה המסומנת R זזה ימינה מיום ליום, והכתם M, שהיה צמוד לשוליים הימניים ב-28 ביוני, כבר לא
+          נראה ב-29 ביוני: הסיבוב של השמש העביר אותו לצד האחורי. גם בתמונות של SDO הכתמים זזים ימינה, ומתקרבים זה לזה ככל שהם מתקרבים לשוליים.
+        </p>
+        <p>
+          <strong>על הכיוונים:</strong> הציורים מוצגים כפי שהודפסו, בלי סיבוב ובלי שיקוף. בשני המקורות הכתמים נעים משמאל לימין, ולכן אין צורך לשקף.
+          אבל הציורים נעשו בהקרנה על דף, ולא ידוע לנו בדיוק איך הדף היה מכוון. לכן הצפון של השמש לא בהכרח למעלה בציור, וייתכן שהמסלולים נוטים
+          בזווית אחרת מאשר בתמונות של SDO, שבהן הצפון תמיד למעלה.
+        </p>
+      </div>
+      <p class="source">
+        הציורים: <span lang="it" dir="ltr">Galileo Galilei, <i>Istoria e dimostrazioni intorno alle macchie solari</i></span>, רומא 1613, עמודים 84
+        ו-85. סריקה של
+        <span lang="fr" dir="ltr">Bibliothèque nationale de France</span> (עותק של מצפה הכוכבים של פריז), דרך <a href="https://commons.wikimedia.org/wiki/File:Illustrations_de_Istoria_e_dimostrazioni_intorno_alle_macchie_solari..._-_(Non_identifi%C3%A9)_;_Galileo_Galilei,_aut._de_texte_-_btv1b26002690_(1_of_2).jpg">Wikimedia Commons</a>,
+        נחלת הכלל (<span lang="en" dir="ltr">Public Domain Mark 1.0</span>). חתכנו את השוליים של הדף. תמונות השמש:
+        <span lang="en" dir="ltr">Courtesy of NASA/SDO and the HMI science team</span>. פרטים מלאים ב<a href={`${base}about/`}>אודות ומקורות</a>.
+      </p>
+    </section>
+  </article>
 </Base>
+
+<style>
+  .timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+  }
+  .timeline li {
+    display: grid;
+    grid-template-columns: 9.5rem minmax(0, 1fr);
+    gap: 1.25rem;
+    padding-block: 1.25rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .timeline li:last-child {
+    border-bottom: 0;
+  }
+  .when {
+    margin: 0;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--accent);
+    border-inline-start: 3px solid var(--accent);
+    padding-inline-start: 0.75rem;
+    line-height: 1.3;
+  }
+  .event h3 {
+    margin-bottom: 0.4rem;
+  }
+  .event p {
+    max-width: 68ch;
+  }
+  .event p:last-child {
+    margin-bottom: 0;
+  }
+  @media (max-width: 640px) {
+    .timeline li {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.4rem;
+    }
+  }
+
+  .pair {
+    margin: 1rem 0 1.25rem;
+    background: var(--plate);
+    color: var(--plate-text);
+    border-radius: var(--radius);
+    padding: clamp(0.5rem, 2vw, 1rem);
+    display: grid;
+    gap: 1rem;
+    max-width: 860px;
+  }
+  .pair-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(0.5rem, 2vw, 1rem);
+  }
+  .pair-row figure {
+    margin: 0;
+  }
+  .pair-row img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: var(--radius);
+  }
+  .pair-row figcaption {
+    font-size: 0.9rem;
+    padding-top: 0.35rem;
+    text-align: center;
+  }
+  .pair-row .drawing img {
+    background: #f4f1ea;
+  }
+</style>

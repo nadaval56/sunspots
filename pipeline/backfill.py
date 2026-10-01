@@ -14,6 +14,9 @@ from . import daily, ingest
 from .storage import Storage, get_storage
 
 
+FLUSH_EVERY = 24
+
+
 def hourly_targets(now: datetime, days: int, step_hours: int = 1) -> list[datetime]:
     end = ingest.target_time(now)
     start = end - timedelta(days=days)
@@ -33,17 +36,21 @@ def run(
     timelapse: bool = True,
     fetch: ingest.Fetcher | None = None,
 ) -> dict:
-    existing = set(storage.list("frames/"))
+    # Skip only hours already listed in the manifest. A frame file without a
+    # manifest entry (e.g. a run killed by its timeout) is fetched again.
+    manifest = ingest.get_json(storage, ingest.MANIFEST_KEY, {"frames": []}) or {"frames": []}
+    existing = {f["key"] for f in manifest.get("frames", [])}
     new: list[dict] = []
     failed = skipped = 0
     for target in hourly_targets(now, days, step_hours):
-        # skip targets that already have a frame within the hour
         if any(k.startswith(f"frames/{target:%Y/%m/%d/%H}") for k in existing):
             skipped += 1
             continue
         entry = ingest.run(storage, target, now=now, fetch=fetch, write_manifest=False)
         if entry:
             new.append(entry)
+            if len(new) % FLUSH_EVERY == 0:  # survive a CI timeout mid-run
+                ingest.update_manifest(storage, new, now)
         else:
             failed += 1
     ingest.update_manifest(storage, new, now)

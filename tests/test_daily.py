@@ -86,6 +86,14 @@ def test_synthetic_backfill_builds_valid_timelapse(store, monkeypatch):
     assert [f["date"] for f in lab["frames"]] == ["2026-09-24", "2026-09-25", "2026-09-26"]
     assert all(abs(f["cx"] - 0.5) < 0.01 for f in lab["frames"])
 
+    # a frame file that never made it into the manifest is fetched again
+    m = json.loads((store.root / "manifest.json").read_text())
+    orphan = m["frames"].pop(0)
+    (store.root / "manifest.json").write_text(json.dumps(m))
+    again = backfill.run(store, NOW, days=2, archive_days=0, step_hours=4, timelapse=False, fetch=ingest.synthetic_fetcher)
+    assert again["stored"] == 1 and again["skipped"] == 12
+    assert orphan["key"] in [f["key"] for f in json.loads((store.root / "manifest.json").read_text())["frames"]]
+
     # rerun is idempotent: nothing new to fetch
     again = backfill.run(store, NOW, days=2, archive_days=0, step_hours=4, timelapse=False, fetch=ingest.synthetic_fetcher)
     assert again["stored"] == 0 and again["skipped"] == 13
@@ -97,3 +105,45 @@ def test_fallback_banner_in_today(store, monkeypatch):
     ingest.update_manifest(store, entry, NOW)
     today = daily.build_today(store, NOW, None, [])
     assert "אולטרה-סגול" in today["fallback_banner"]
+
+
+def _cycle_fixtures():
+    # trimmed from the real NOAA files of 2026-10-01
+    return (json.loads((FIX / "cycle_observed_sample.json").read_text()),
+            json.loads((FIX / "cycle_predicted_sample.json").read_text()))
+
+
+def test_build_cycle_from_real_shape():
+    obs, pred = _cycle_fixtures()
+    c = noaa.build_cycle(obs, pred)
+    months = [r[0] for r in c["observed"]]
+    assert months[0] == "2008-12" and "1749-01" not in months and "2008-11" not in months
+    assert months == sorted(months)
+    by_month = {r[0]: r for r in c["observed"]}
+    assert by_month["2026-01"] == ["2026-01", 115.0, 104.2]
+    assert by_month["2026-08"][2] is None  # -1 → null
+    assert c["predicted"][0] == ["2026-03", 97.9, 89.7, 108.5]
+    assert c["predicted"][-1][2] == 0.0  # a real 0 is kept
+
+
+def test_build_cycle_defensive():
+    c = noaa.build_cycle([{"time_tag": "2020-01", "ssn": "6.2"}, {"bad": 1}, "junk"], None)
+    assert c["observed"] == [["2020-01", 6.2, None]] and c["predicted"] == []
+
+
+def test_daily_cycle_step_writes_json_and_survives_failure(store, monkeypatch):
+    obs, pred = _cycle_fixtures()
+    monkeypatch.delenv("SUNSPOTS_SYNTHETIC", raising=False)
+    monkeypatch.setattr(noaa, "_get_json", lambda url: obs if "observed" in url else pred)
+    errors: list[str] = []
+    daily.build_cycle(store, NOW, errors)
+    written = json.loads(store.get("cycle.json"))
+    assert written["generated_at"].startswith("2026-09-27") and written["predicted"] and not errors
+
+    def boom(url):
+        raise RuntimeError("down")
+
+    monkeypatch.setattr(noaa, "_get_json", boom)
+    errors = []
+    assert daily.build_cycle(store, NOW, errors) is None
+    assert len(errors) == 2 and json.loads(store.get("cycle.json")) == written  # previous file kept
