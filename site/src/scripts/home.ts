@@ -3,7 +3,7 @@
 import { MEDIA_BASE } from "../config";
 import { EARTH_RADII_PER_SUN, heliographicToPixel, synodicRate, type Disk } from "../lib/solar";
 import type { ChannelEntry, Channels, FrameEntry, Manifest, Region, Today } from "../lib/types";
-import { formatClock, formatLocalTime, formatUtc, relativeFromNow } from "../lib/format";
+import { formatClock, formatLocalTime, formatUtc, relativeFromNow, TZ } from "../lib/format";
 
 const SVG = "http://www.w3.org/2000/svg";
 const $ = <T extends Element = HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -279,15 +279,20 @@ function renderFlareBars(today: Today) {
 
 const CLASS_LEVELS: [string, number][] = [["A", 1e-8], ["B", 1e-7], ["C", 1e-6], ["M", 1e-5], ["X", 1e-4]];
 
-function renderXray(today: Today) {
+type Xray = NonNullable<Today["xray"]>;
+
+/** xray.json is refreshed every hour by the ingest run; today.json only once a day.
+ *  Use whichever has the newer last sample. */
+function renderXray(hourly: Xray | null, daily: Xray | null | undefined) {
   const host = $("#xray-chart");
-  const x = today.xray;
-  if (!x || !x.series.length) {
+  const x = [hourly, daily].filter((v): v is Xray => !!v?.series?.length).sort((a, b) => (a.latest.t < b.latest.t ? 1 : -1))[0];
+  if (!x) {
     host.textContent = "אין נתונים.";
     return;
   }
+  const last = new Date(x.latest.t);
   $("#xray-class").textContent = x.latest.class;
-  $("#xray-when").textContent = `(${formatClock(new Date(x.latest.t))} שעון ישראל)`;
+  $("#xray-when").textContent = `(${formatClock(last)} שעון ישראל, ${relativeFromNow(last)})`;
   drawXray(host, x);
   // The viewBox follows the real width so labels stay at their CSS size on phones.
   let w = host.clientWidth;
@@ -298,12 +303,27 @@ function renderXray(today: Today) {
   }).observe(host);
 }
 
-function drawXray(host: HTMLElement, x: NonNullable<Today["xray"]>) {
+/** 00:00 Israel time of the day that contains t. */
+function israelMidnight(t: number): number {
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat("en-GB", { timeZone: TZ, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+      .formatToParts(new Date(t))
+      .map((q) => [q.type, Number(q.value)]),
+  );
+  const offset = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute) - Math.floor(t / 60e3) * 60e3; // Israel − UTC
+  return Date.UTC(p.year, p.month - 1, p.day) - offset;
+}
+
+function drawXray(host: HTMLElement, x: Xray) {
   // Time runs left→right as on the instruments, also in an RTL page (DECISIONS #18).
   const W = Math.max(300, Math.round(host.clientWidth || 560));
-  const H = 200, padL = 34, padR = 12, padT = 10, padB = 26;
-  const t0 = new Date(x.series[0][0]).getTime();
-  const t1 = new Date(x.series[x.series.length - 1][0]).getTime();
+  const H = 214, padL = 34, padR = 12, padT = 24, padB = 26;
+  // All of yesterday and today so far, on the Israel clock: two clear halves, "אתמול" and "היום".
+  // (Older data, from the daily today.json fallback, may start later; then the window starts there.)
+  const t1 = new Date(x.latest.t).getTime();
+  const today0 = israelMidnight(t1);
+  const t0 = Math.max(new Date(x.series[0][0]).getTime(), israelMidnight(today0 - 12 * 3600e3));
+  const series = x.series.filter(([t]) => new Date(t).getTime() >= t0);
   const ly0 = -8.5, ly1 = -3.5;
   const sx = (t: number) => padL + ((t - t0) / Math.max(1, t1 - t0)) * (W - padL - padR);
   const sy = (f: number) => padT + (1 - (Math.log10(Math.max(f, 1e-9)) - ly0) / (ly1 - ly0)) * (H - padT - padB);
@@ -314,27 +334,36 @@ function drawXray(host: HTMLElement, x: NonNullable<Today["xray"]>) {
     height: H,
     class: "xray-svg",
     role: "img",
-    "aria-label": `שטף קרני X מהשמש ב-24 השעות האחרונות, מ-${formatClock(new Date(t0))} עד ${formatClock(new Date(t1))} שעון ישראל. המדידה האחרונה: ${x.latest.class}.`,
+    "aria-label": `שטף קרני X מהשמש, מ-${formatLocalTime(new Date(t0))} עד ${formatLocalTime(new Date(t1))}, שעון ישראל. המדידה האחרונה: ${x.latest.class}.`,
   });
   for (const [name, f] of CLASS_LEVELS) {
     const y = sy(f);
     svgEl("line", { x1: padL, x2: W - padR, y1: y, y2: y, class: "grid" }, svg);
     svgEl("text", { x: padL - 8, y: y + 4, class: "axis-label" }, svg).textContent = name;
   }
-  // a tick every 6 hours on the Israel clock (00, 06, 12, 18), plus "now" at the right edge
+  // A tick every 6 hours on the Israel clock, "חצות" at midnight, "עכשיו" at the right edge.
   const HOUR = 3600e3;
-  const ticks: number[] = [];
   for (let t = Math.ceil(t0 / HOUR) * HOUR; t <= t1; t += HOUR) {
-    const h = Number(new Date(t).toLocaleString("en-GB", { timeZone: "Asia/Jerusalem", hour: "2-digit", hour12: false }));
-    if (h % 6 === 0 && sx(t) < W - padR - 40) ticks.push(t);
-  }
-  for (const t of ticks) {
-    svgEl("line", { x1: sx(t), x2: sx(t), y1: padT, y2: H - padB, class: "grid" }, svg);
-    svgEl("text", { x: sx(t), y: H - 8, class: "time-label", "text-anchor": "middle" }, svg).textContent = formatClock(new Date(t));
+    const h = Number(new Date(t).toLocaleString("en-GB", { timeZone: TZ, hour: "2-digit", hourCycle: "h23" }));
+    if (h % 6 !== 0) continue;
+    const isMidnight = h === 0;
+    svgEl("line", { x1: sx(t), x2: sx(t), y1: padT, y2: H - padB, class: isMidnight ? "midnight" : "grid" }, svg);
+    if (sx(t) < W - padR - 44 && sx(t) > padL + 14)
+      svgEl("text", { x: sx(t), y: H - 8, class: "time-label", "text-anchor": "middle" }, svg).textContent = isMidnight ? "חצות" : formatClock(new Date(t));
   }
   svgEl("text", { x: W - padR, y: H - 8, class: "time-label now", "text-anchor": "end" }, svg).textContent = "עכשיו";
+  // Day names above the plot, centred in their part of the window. Right after midnight
+  // "today" is a sliver, so its name sits at the right edge instead.
+  const day = (label: string, a: number, b: number) => {
+    if (b - a < 0.5 * HOUR) return;
+    const wide = sx(b) - sx(a) > 60;
+    const atEnd = !wide && b === t1;
+    svgEl("text", { x: wide ? (sx(a) + sx(b)) / 2 : atEnd ? W - padR : sx(a) + 4, y: padT - 8, class: "day-label", "text-anchor": wide ? "middle" : atEnd ? "end" : "start" }, svg).textContent = label;
+  };
+  if (today0 > t0) day("אתמול", t0, today0);
+  day("היום", Math.max(today0, t0), t1);
 
-  const pts = x.series.map(([t, f]) => [sx(new Date(t).getTime()), sy(f)] as const);
+  const pts = series.map(([t, f]) => [sx(new Date(t).getTime()), sy(f)] as const);
   svgEl("path", { d: "M" + pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join("L"), class: "xray-line" }, svg);
 
   // hover: crosshair + tooltip
@@ -349,7 +378,7 @@ function drawXray(host: HTMLElement, x: NonNullable<Today["xray"]>) {
     let i = 0;
     for (let k = 1; k < pts.length; k++) if (Math.abs(pts[k][0] - vx) < Math.abs(pts[i][0] - vx)) i = k;
     const [px, py] = pts[i];
-    const [t, f] = x.series[i];
+    const [t, f] = series[i];
     cross.setAttribute("x1", String(px));
     cross.setAttribute("x2", String(px));
     dot.setAttribute("cx", String(px));
@@ -395,10 +424,11 @@ function renderTimelapse(today: Today) {
 // --- main ------------------------------------------------------------------------------
 
 async function main() {
-  const [today, manifest, channels] = await Promise.all([
+  const [today, manifest, channels, xray] = await Promise.all([
     getJSON<Today>("today.json"),
     getJSON<Manifest>("manifest.json"),
     getJSON<Channels>("latest/channels.json"),
+    getJSON<Xray & { generated_at: string }>("xray.json"),
   ]);
   const frame = manifest?.latest ?? today?.image ?? null;
   if (!today && !frame) {
@@ -428,10 +458,10 @@ async function main() {
     setupToggle($<HTMLInputElement>("#toggle-regions"), regionsLayer);
     setupToggle($<HTMLInputElement>("#toggle-earth"), earthLayer, (on) => ($("#earth-hint").hidden = !on));
   }
+  if (today || xray) renderXray(xray, today?.xray);
   if (today) {
     renderStats(today, regions);
     renderFlareBars(today);
-    renderXray(today);
     renderTimelapse(today);
   }
 }

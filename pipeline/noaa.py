@@ -18,6 +18,7 @@ URLS = {
     "regions": f"{NOAA}/json/solar_regions.json",
     "probabilities": f"{NOAA}/json/solar_probabilities.json",
     "xrays": f"{NOAA}/json/goes/primary/xrays-1-day.json",
+    "xrays_3day": f"{NOAA}/json/goes/primary/xrays-3-day.json",
     "cycle_observed": f"{NOAA}/json/solar-cycle/observed-solar-cycle-indices.json",
     "cycle_predicted": f"{NOAA}/json/solar-cycle/predicted-solar-cycle.json",
 }
@@ -161,12 +162,17 @@ def latest_probabilities(rows: list[dict]) -> dict | None:
     }
 
 
-def xray_series(rows: list[dict], step: int = 10) -> dict | None:
-    """Long-channel (0.1–0.8 nm) flux, thinned to every `step`-th minute for a sparkline."""
+def xray_series(rows: list[dict], step: int = 10, hours: float | None = None) -> dict | None:
+    """Long-channel (0.1–0.8 nm) flux, thinned to every `step`-th minute for a sparkline.
+    hours: keep only that many hours before the last sample."""
     long = [r for r in rows if r.get("energy") == "0.1-0.8nm" and (r.get("flux") or 0) > 0]  # 0 = data gap
     if not long:
         return None
     long.sort(key=lambda r: r["time_tag"])
+    if hours is not None:
+        last = datetime.fromisoformat(long[-1]["time_tag"].replace("Z", "+00:00"))
+        since = (last - timedelta(hours=hours)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        long = [r for r in long if r["time_tag"] >= since]
     thinned = long[::step] + ([long[-1]] if (len(long) - 1) % step else [])
     return {
         "latest": {"t": long[-1]["time_tag"], "flux": long[-1]["flux"], "class": flare_class(long[-1]["flux"])},

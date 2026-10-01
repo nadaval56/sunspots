@@ -179,3 +179,36 @@ def test_failed_hour_keeps_previous_channels_json_entries(store):
     ingest.run(store, much_later, now=much_later, fetch=make_fetcher({}))
     ids = [c["id"] for c in ingest.get_json(store, channels.CHANNELS_KEY)["channels"]]
     assert ids == ["continuum"]  # the new hour's continuum; aia171 is 7 h old
+
+
+# --- hourly X-ray copy ----------------------------------------------------------------
+
+def test_refresh_xray_writes_a_small_series(store, monkeypatch):
+    rows = [
+        {"time_tag": f"2026-10-01T{h:02d}:{m:02d}:00Z", "energy": "0.1-0.8nm", "flux": 2e-7 + h * 1e-8}
+        for h in range(24) for m in range(60)
+    ] + [{"time_tag": "2026-10-01T23:59:00Z", "energy": "0.05-0.4nm", "flux": 1e-8}]
+    monkeypatch.setattr(sources, "synthetic_enabled", lambda: False)
+    monkeypatch.setattr(ingest.noaa, "_get_json", lambda url: rows)
+    assert ingest.refresh_xray(store, T) is None
+    x = json.loads(store.get(ingest.XRAY_KEY))
+    assert x["generated_at"] and x["latest"]["t"] == "2026-10-01T23:59:00Z"
+    assert len(x["series"]) == 145  # every 10th minute, plus the last one
+
+
+def test_refresh_xray_failure_is_reported_not_raised(store, monkeypatch):
+    def boom(url):
+        raise ConnectionError("NOAA down")
+
+    monkeypatch.setattr(sources, "synthetic_enabled", lambda: False)
+    monkeypatch.setattr(ingest.noaa, "_get_json", boom)
+    assert "NOAA down" in ingest.refresh_xray(store, T)
+    assert store.get(ingest.XRAY_KEY) is None
+
+
+def test_xray_series_keeps_only_the_last_hours():
+    from pipeline import noaa
+
+    rows = [{"time_tag": f"2026-09-{d:02d}T{h:02d}:00:00Z", "energy": "0.1-0.8nm", "flux": 1e-7} for d in (28, 29, 30) for h in range(24)]
+    x = noaa.xray_series(rows, step=1, hours=49)
+    assert x["series"][0][0] == "2026-09-28T22:00:00Z" and x["latest"]["t"] == "2026-09-30T23:00:00Z"
