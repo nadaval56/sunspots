@@ -26,6 +26,11 @@ Claude לא יכול ליצור קובץ שמרחיב את ההרשאות שלו
 - ~~שם האתר~~: נבחר "השמש היום" ✅
 - דומיין: עד שיוחלט, הקוד משתמש ב-`sunspots.example`.
 
+### 4.5 [x] גיבוי לתזמון: cron-job.org
+GitHub מריץ workflows מתוזמנים באיחור ולפעמים מדלג. לכן cron-job.org מפעיל את `ingest` פעם בשעה דרך ה-API (משימה `sunspots ingest`, ‏POST ל-`.../actions/workflows/ingest.yml/dispatches` עם `{"ref":"main"}`). ריצת הבדיקה ב-1.10.2026 החזירה 204, והריצה ב-GitHub הצליחה.
+- **לחדש את המפתח לפני שהוא פג:** fine-grained token בשם `cron-job sunspots`, עם הרשאת Actions: Read and write לריפו הזה בלבד. כשהוא יפוג, cron-job.org יקבל 401. ייצרו מפתח חדש באותן הגדרות והחליפו את הכותרת `Authorization` במשימה.
+- **עד מרץ 2028:** GitHub סימן את גרסת ה-API `2022-11-28` כמיושנת (Sunset: 10.3.2028). לפני כן צריך לעדכן את הכותרת `X-GitHub-Api-Version` לגרסה הנוכחית.
+
 ## M7: חיבור לענן (כשהאתר מוכן)
 
 ### 5–9. [ ] הקמת Cloudflare R2
