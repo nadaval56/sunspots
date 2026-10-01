@@ -1,10 +1,105 @@
 ---
 import Base from "../layouts/Base.astro";
-import Upcoming from "../components/Upcoming.astro";
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 ---
 
-<Base title="מחזור השמש">
-  <Upcoming title="מחזור השמש" milestone="M5">
-    <p>מספר הכתמים עולה ויורד במחזור של כ-11 שנים. כאן יוצגו המחזור הנוכחי, התחזית של NOAA, ומספר הכתמים ביום הזה לפני 50, 100 ו-200 שנה.</p>
-  </Upcoming>
+<Base title="מחזור השמש" description="מספר כתמי השמש עולה ויורד במחזור של כ-11 שנים. המחזור הנוכחי מול התחזית של NOAA, ומספר הכתמים ביום הזה לפני 50, 100 ו-200 שנה.">
+  <article class="wrap content-page">
+    <header class="page-head">
+      <h1>מחזור השמש</h1>
+      <p class="lede">
+        יש שנים שבהן השמש מלאה כתמים, ויש שנים שבהן עוברים שבועות בלי כתם אחד. מספר הכתמים עולה ויורד במחזור שאורכו בממוצע כ-11 שנים.
+        השיא נקרא <strong>מקסימום</strong>, והשפל נקרא <strong>מינימום</strong>.
+      </p>
+    </header>
+
+    <section class="block" aria-labelledby="now-title">
+      <h2 id="now-title">המחזור הנוכחי</h2>
+      <p>
+        סופרים את המחזורים מאז 1755. המחזור הנוכחי, <strong>מחזור 25</strong>, התחיל במינימום של דצמבר 2019. באוקטובר 2024 הודיעו NASA ו-NOAA
+        שהשמש נמצאת בתקופת המקסימום שלו.
+      </p>
+
+      <figure class="chart-card panel">
+        <figcaption class="chart-title">מספר הכתמים החודשי, מסוף 2008 ועד סוף התחזית</figcaption>
+        <div class="legend" id="cycle-legend">
+          <span><span class="lg lg-thin" aria-hidden="true"></span>ממוצע חודשי</span>
+          <span><span class="lg lg-thick" aria-hidden="true"></span>ממוצע מוחלק (13 חודשים)</span>
+          <span><span class="lg lg-pred" aria-hidden="true"></span>תחזית NOAA</span>
+          <span><span class="lg lg-band" aria-hidden="true"></span>טווח התחזית</span>
+        </div>
+        <div class="charthost" id="cycle-chart"><p class="hint">טוען נתונים…</p></div>
+        <ul class="facts" id="cycle-facts"></ul>
+        <p class="hint">
+          <strong>ממוצע מוחלק</strong>: ממוצע של 13 חודשים סביב כל חודש, שמבטל את הקפיצות מחודש לחודש ומראה את המגמה. לכן הקו המוחלק נעצר כחצי שנה
+          לפני הנתון האחרון: הוא מחכה לחודשים שעוד לא עברו. <span id="cycle-updated"></span>
+        </p>
+        <p class="source">מקור: <span lang="en" dir="ltr">NOAA Space Weather Prediction Center</span> (נתונים נצפים של SILSO ותחזית SWPC).</p>
+      </figure>
+    </section>
+
+    <section class="block" aria-labelledby="day-title">
+      <h2 id="day-title">השמש ביום הזה</h2>
+      <p>כמה כתמים היו על השמש בדיוק בתאריך של היום, לפני 50, 100 ו-200 שנה? המספרים הם מספר הכתמים היומי, כמו זה שמופיע בעמוד הבית.</p>
+      <div class="day-picker">
+        <label for="this-day-date">תאריך</label>
+        <input type="date" id="this-day-date" />
+      </div>
+      <dl class="stats three" id="this-day-cards" aria-live="polite"></dl>
+      <p class="hint" id="this-day-note"></p>
+      <p class="source">מקור: <span lang="en" dir="ltr">WDC-SILSO, Royal Observatory of Belgium, Brussels</span></p>
+    </section>
+
+    <section class="block" aria-labelledby="long-title">
+      <h2 id="long-title">מאתיים שנה של כתמים</h2>
+      <p>
+        בגרף הזה כל נקודה היא ממוצע של שנה שלמה. רואים בו בבירור את הגלים של כ-11 שנים, וגם שהם לא שווים: יש מחזורים חזקים ויש חלשים, והאורך משתנה
+        בין כ-9 לכ-14 שנים.
+      </p>
+      <figure class="chart-card panel">
+        <figcaption class="chart-title">ממוצע שנתי של מספר הכתמים היומי</figcaption>
+        <div class="charthost" id="longterm-chart"><p class="hint">טוען…</p></div>
+        <p class="hint">בעשורים הראשונים של הרשימה היו ימים רבים בלי תצפית, ולכן הממוצעים שם פחות מדויקים. השנה הנוכחית חלקית.</p>
+        <p class="source">מקור: <span lang="en" dir="ltr">WDC-SILSO, Royal Observatory of Belgium, Brussels</span></p>
+      </figure>
+    </section>
+
+    <section class="block prose" aria-labelledby="why-title">
+      <h2 id="why-title">למה יש מחזור?</h2>
+      <p>
+        כתמי השמש הם מקומות שבהם שדה מגנטי חזק בוקע מפני השמש. השמש מסתובבת מהר יותר בקו המשווה מאשר ליד הקטבים (את זה אפשר למדוד
+        <a href={`${base}lab/`}>במעבדת הסיבוב</a>), והסיבוב הלא אחיד הזה מותח ומפתל את השדה המגנטי שלה.
+      </p>
+      <p>
+        בכל מחזור השדה המגנטי הכללי של השמש מתהפך: הקוטב המגנטי הצפוני הופך לדרומי. לכן המחזור המגנטי המלא ארוך פי שניים, כ-22 שנים. הפרטים
+        המדויקים של המנגנון עדיין נחקרים, ובגלל זה גם קשה לחזות מראש כמה חזק יהיה המחזור הבא.
+      </p>
+      <p>
+        <strong>מספר הכתמים</strong> נספר בשיטה שהציע האסטרונום השווייצרי רודולף וולף באמצע המאה ה-19: סופרים את קבוצות הכתמים, כופלים ב-10, ומוסיפים את מספר הכתמים הבודדים.
+        היום מחשב אותו מרכז SILSO בבריסל מתצפיות של עשרות מצפים ברחבי העולם.
+      </p>
+    </section>
+  </article>
 </Base>
+
+<script>
+  import "../scripts/cycle";
+</script>
+
+<style>
+  .day-picker {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+  }
+  .day-picker input {
+    font: inherit;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.3rem 0.5rem;
+    min-height: 40px;
+  }
+</style>

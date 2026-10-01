@@ -1,10 +1,145 @@
 ---
 import Base from "../layouts/Base.astro";
-import Upcoming from "../components/Upcoming.astro";
+import credits from "../../../content/credits.json";
+import { SITE_NAME, CREDIT_SDO } from "../config";
+
+const REPO = "https://github.com/nadaval56/sunspots";
+
+interface Credit {
+  file: string;
+  title: string;
+  author: string;
+  date: string;
+  source_url: string;
+  license: string;
+  license_url: string;
+  notes: string;
+}
+const CREDITS = credits as Credit[];
 ---
 
-<Base title="אודות ומקורות">
-  <Upcoming title="אודות ומקורות" milestone="M5">
-    <p>האתר מתעדכן לבד: כל שעה הוא מוריד תמונה חדשה של השמש מהלוויין SDO של נאס"א, וכל יום הוא בונה סרטון של 30 הימים האחרונים ומושך נתונים ממרכז חיזוי מזג האוויר בחלל של NOAA.</p>
-  </Upcoming>
+<Base title="אודות ומקורות" description="מה האתר, איך הוא מתעדכן לבד כל שעה, ומאיפה מגיעים התמונות והנתונים. קרדיטים ורישוי.">
+  <article class="wrap content-page">
+    <header class="page-head">
+      <h1>אודות ומקורות</h1>
+      <p class="lede">
+        "{SITE_NAME}" הוא אתר לימודי על כתמי השמש. הוא נבנה בשביל תלמידים סקרנים, המורים שלהם וכל מי שמתעניין באסטרונומיה. אפשר לראות בו את השמש
+        כפי שהיא נראית היום, ולמדוד בעצמכם כמה זמן לוקח לה להסתובב סביב עצמה, כמו שעשה גלילאו ב-1612.
+      </p>
+    </header>
+
+    <section class="block prose" aria-labelledby="how-title">
+      <h2 id="how-title">איך האתר מתעדכן</h2>
+      <p>אף אחד לא מעדכן את האתר ביד. תוכנות קטנות רצות לפי לוח זמנים ועושות את העבודה:</p>
+      <ol class="flow">
+        <li>
+          <h3>כל שעה</h3>
+          <p>
+            מורידים תמונה חדשה של השמש מהלוויין <strong>SDO</strong> (Solar Dynamics Observatory) של NASA, דרך הארכיון של אוניברסיטת סטנפורד. התמונה
+            עוברת בדיקות: שהיא עדכנית, שהיא לא "שרופה" מעודף אור, ושהשמש נמצאת בה במקום ובגודל הנכונים. אם משהו לא תקין, מנסים מקור גיבוי.
+          </p>
+        </li>
+        <li>
+          <h3>כל יום</h3>
+          <p>
+            שומרים תמונה אחת של היום בארכיון קבוע, בונים מחדש את סרטון 30 הימים, ומורידים מ-NOAA, סוכנות מזג האוויר של ארצות הברית, את מספר הכתמים,
+            את האזורים הפעילים, את הסתברויות ההתפרצות ואת נתוני מחזור השמש.
+          </p>
+        </li>
+        <li>
+          <h3>בדפדפן שלכם</h3>
+          <p>
+            העמודים עצמם קבועים ומתארחים ב-GitHub Pages. התמונות והנתונים המתעדכנים שמורים בנפרד, באחסון ענן (Cloudflare R2), והעמוד קורא אותם
+            ברגע שאתם פותחים אותו. לכן התמונה בעמוד הבית תמיד עדכנית, בלי לבנות את האתר מחדש.
+          </p>
+        </li>
+      </ol>
+      <p>
+        הקוד של האתר פתוח: <a href={REPO} lang="en" dir="ltr">github.com/nadaval56/sunspots</a>. שם אפשר לראות גם את רשימת המקורות לכל עובדה
+        היסטורית ומדעית באתר (<a href={`${REPO}/blob/main/content/sources.md`} lang="en" dir="ltr">content/sources.md</a>).
+      </p>
+    </section>
+
+    <section class="block" aria-labelledby="credits-title">
+      <h2 id="credits-title">קרדיטים ורישוי</h2>
+      <p>
+        תמונות השמש: <span lang="en" dir="ltr">{CREDIT_SDO}</span>. התמונות של SDO אינן מוגנות בזכויות יוצרים, אלא אם צוין אחרת. מספר הכתמים
+        ההיסטורי מופיע ברישיון <span lang="en" dir="ltr">CC BY-NC 4.0</span>, לשימוש שאינו מסחרי.
+      </p>
+      <ul class="credit-list">
+        {
+          CREDITS.map((c) => (
+            <li class="credit panel" lang="en" dir="ltr">
+              <p class="c-title">{c.title}</p>
+              <p class="c-meta">
+                {c.author}
+                {c.date && <span> · {c.date}</span>}
+              </p>
+              <p class="c-meta">
+                License: <a href={c.license_url}>{c.license}</a>
+              </p>
+              <p class="c-meta">
+                Source: <a href={c.source_url}>{c.source_url.replace(/^https?:\/\//, "").slice(0, 70)}{c.source_url.replace(/^https?:\/\//, "").length > 70 ? "…" : ""}</a>
+              </p>
+              {c.notes && <p class="c-notes">{c.notes}</p>}
+              <p class="c-file"><code>{c.file}</code></p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </article>
 </Base>
+
+<style>
+  .flow {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    display: grid;
+    gap: 0;
+    max-width: 72ch;
+  }
+  .flow li {
+    border-inline-start: 3px solid var(--accent);
+    padding: 0.25rem 0 0.75rem;
+    padding-inline-start: 1rem;
+  }
+  .flow h3 {
+    margin-bottom: 0.25rem;
+    color: var(--accent);
+  }
+  .flow p {
+    margin: 0;
+  }
+  .credit-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+  }
+  .credit {
+    padding: 0.9rem 1rem;
+    text-align: left;
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+  }
+  .credit p {
+    margin: 0 0 0.35rem;
+  }
+  .c-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .c-meta,
+  .c-notes {
+    color: var(--muted);
+  }
+  .c-file {
+    margin: 0 !important;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+</style>

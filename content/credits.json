@@ -1,0 +1,72 @@
+[
+  {
+    "file": "site/public/history/galileo-1612-06-28.jpg",
+    "title": "Galileo Galilei, sunspot drawing of 28 June 1612 (\"Giug. D. 28\"), Istoria e dimostrazioni intorno alle macchie solari, Rome 1613, p. 84",
+    "author": "Galileo Galilei (1564–1642); engraving printed by Giacomo Mascardi, Rome",
+    "date": "1612 (drawing), 1613 (print)",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Illustrations_de_Istoria_e_dimostrazioni_intorno_alle_macchie_solari..._-_(Non_identifi%C3%A9)_;_Galileo_Galilei,_aut._de_texte_-_btv1b26002690_(1_of_2).jpg",
+    "license": "Public domain (Public Domain Mark 1.0; PD-old-100-expired, PD-1923 on Wikimedia Commons)",
+    "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "notes": "Scan by the Bibliothèque nationale de France of the Observatoire de Paris copy (ark:/12148/btv1b26002690, catalogue https://catalogue.bnf.fr/ark:/12148/cb38496559h). License checked on the Commons file page on 2026-10-01. We cropped the page margins around the disk, applied a mild contrast stretch and resized to 760 px. Not rotated or mirrored."
+  },
+  {
+    "file": "site/public/history/galileo-1612-06-29.jpg",
+    "title": "Galileo Galilei, sunspot drawing of 29 June 1612 (\"Giug. D. 29\"), Istoria e dimostrazioni intorno alle macchie solari, Rome 1613, p. 85",
+    "author": "Galileo Galilei (1564–1642); engraving printed by Giacomo Mascardi, Rome",
+    "date": "1612 (drawing), 1613 (print)",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Illustrations_de_Istoria_e_dimostrazioni_intorno_alle_macchie_solari..._-_(Non_identifi%C3%A9)_;_Galileo_Galilei,_aut._de_texte_-_btv1b26002690_(2_of_2).jpg",
+    "license": "Public domain (Public Domain Mark 1.0; PD-old-100-expired, PD-1923 on Wikimedia Commons)",
+    "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "notes": "Same BnF scan series as the 28 June drawing. Downloaded as the 960 px Commons rendition, cropped around the disk, mild contrast stretch, resized to 760 px. Not rotated or mirrored."
+  },
+  {
+    "file": "site/public/lab-archive/*.jpg; live frames and daily archive (media)",
+    "title": "SDO/HMI continuum intensity images (Ic_1k, Ic_4k)",
+    "author": "NASA/SDO and the HMI science team; served by the Joint Science Operations Center (JSOC), Stanford University",
+    "date": "2026–",
+    "source_url": "https://jsoc1.stanford.edu/data/hmi/images/",
+    "license": "Not copyrighted (NASA): \"SDO images and movies are not copyrighted unless explicitly noted\". Credit: Courtesy of NASA/SDO and the HMI science team.",
+    "license_url": "https://sdo.gsfc.nasa.gov/data/rules.php",
+    "notes": "Cropped around the disk, outside of the disk blacked out (removes the text label), resized and re-encoded (WebP/JPEG)."
+  },
+  {
+    "file": "fallback frames (media)",
+    "title": "SDO browse images: HMI continuum (HMIIC) and AIA 1700 Å",
+    "author": "NASA/SDO and the AIA and HMI science teams; NASA Goddard Space Flight Center",
+    "date": "2026–",
+    "source_url": "https://sdo.gsfc.nasa.gov/assets/img/browse/",
+    "license": "Not copyrighted (NASA). Credit: Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams.",
+    "license_url": "https://sdo.gsfc.nasa.gov/data/rules.php",
+    "notes": "Used only when JSOC is unavailable (BRIEF §4.2)."
+  },
+  {
+    "file": "today.json, cycle.json (media)",
+    "title": "Space weather data: sunspot number, Solar Region Summary, solar regions, flare probabilities, GOES X-ray flux, observed and predicted solar cycle",
+    "author": "NOAA Space Weather Prediction Center (SWPC)",
+    "date": "updated daily",
+    "source_url": "https://services.swpc.noaa.gov/",
+    "license": "Public domain (U.S. Government work)",
+    "license_url": "https://www.swpc.noaa.gov/",
+    "notes": "Read by the daily pipeline and reshaped; values are not changed."
+  },
+  {
+    "file": "data/silso_daily.csv; site/public/data/silso-by-day.json; site/src/data/silso-yearly.json",
+    "title": "International Sunspot Number V2.0, daily total sunspot number since 1818",
+    "author": "WDC-SILSO, Royal Observatory of Belgium, Brussels",
+    "date": "1818–2026",
+    "source_url": "https://doi.org/10.24414/qnza-ac80",
+    "license": "CC BY-NC 4.0. Credit: Source: WDC-SILSO, Royal Observatory of Belgium, Brussels",
+    "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+    "notes": "silso-by-day.json is the same daily values regrouped by calendar day; silso-yearly.json holds yearly means of the daily values that we computed (scripts/build_this_day.py). Non-commercial educational use."
+  },
+  {
+    "file": "fonts (site/node_modules/@fontsource)",
+    "title": "Frank Ruhl Libre, Assistant, IBM Plex Mono",
+    "author": "The Frank Ruhl Libre Project Authors; The Assistant Project Authors and The Source Sans Pro Authors; IBM Corp. (IBM Plex Mono); packaged by Fontsource",
+    "date": "",
+    "source_url": "https://fontsource.org/",
+    "license": "SIL Open Font License 1.1",
+    "license_url": "https://openfontlicense.org/",
+    "notes": "Self-hosted, Hebrew and Latin subsets."
+  }
+]
