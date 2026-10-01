@@ -270,7 +270,7 @@ button[aria-pressed="true"] {
 .xray-svg { display: block; max-width: 100%; height: auto; direction: ltr; touch-action: pan-y; }
 .xray-svg .now { font-weight: 600; }
 .xray-svg .grid { stroke: var(--rule); stroke-width: 1; }
-.xray-svg .midnight { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 3; }
+.xray-svg .day-sep { stroke: var(--muted); stroke-width: 1; }
 .xray-svg .day-label { fill: var(--text); font-family: var(--font-body); font-size: 0.8rem; font-weight: 600; }
 .xray-svg .axis-label { fill: var(--muted); font-family: var(--font-num); font-size: 0.75rem; text-anchor: end; }
 .xray-svg .time-label { fill: var(--muted); font-family: var(--font-num); font-size: 0.75rem; }
