@@ -2,7 +2,7 @@
 // static site never needs a rebuild for new data.
 import { MEDIA_BASE } from "../config";
 import { EARTH_RADII_PER_SUN, heliographicToPixel, synodicRate, type Disk } from "../lib/solar";
-import type { FrameEntry, Manifest, Region, Today } from "../lib/types";
+import type { ChannelEntry, Channels, FrameEntry, Manifest, Region, Today } from "../lib/types";
 import { formatClock, formatLocalTime, formatUtc, relativeFromNow } from "../lib/format";
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -33,18 +33,68 @@ function diskInViewbox(f: FrameEntry): Disk {
   return { cx: f.cx * 1000, cy: f.cy * 1000, r: f.r * 1000 };
 }
 
+let shownT: Date | null = null;
+
+function showFrame(src: string, t: Date, iso: string, alt: string) {
+  const img = $<HTMLImageElement>("#sun");
+  img.src = src;
+  img.alt = alt;
+  shownT = t;
+  $("#frame-time").innerHTML = `${formatLocalTime(t)} (שעון ישראל) · <time datetime="${iso}" class="ltr">${formatUtc(t)}</time>`;
+  tickAge();
+}
+
+function tickAge() {
+  if (shownT) $("#frame-age").textContent = `(עודכן ${relativeFromNow(shownT)})`;
+}
+
 function renderImage(frame: FrameEntry) {
   const img = $<HTMLImageElement>("#sun");
+  img.addEventListener("load", () => $("#plate-empty")?.remove(), { once: true });
   const t = new Date(frame.t);
-  img.src = `${MEDIA_BASE}/${frame.key}`;
-  img.alt = `תמונת השמש באור נראה (SDO/HMI), ${formatLocalTime(t)}`;
-  img.addEventListener("load", () => $("#plate-empty").remove(), { once: true });
+  showFrame(`${MEDIA_BASE}/${frame.key}`, t, frame.t, `תמונת השמש באור נראה (SDO/HMI), ${formatLocalTime(t)}`);
+  setInterval(tickAge, 60_000);
+}
 
-  $("#frame-time").innerHTML = `${formatLocalTime(t)} (שעון ישראל) · <time datetime="${frame.t}" class="ltr">${formatUtc(t)}</time>`;
-  const age = $("#frame-age");
-  const tick = () => (age.textContent = `(עודכן ${relativeFromNow(t)})`);
-  tick();
-  setInterval(tick, 60_000);
+/**
+ * Wavelength switcher. Every channel is cropped to the same framing as the hourly
+ * frame (pipeline/channels.py), so the region rings and the Earth stay aligned.
+ */
+function setupChannels(channels: Channels | null, frame: FrameEntry) {
+  const list = (channels?.channels ?? []).filter((c) => c.id !== "continuum");
+  if (!list.length) return;
+  const visible: ChannelEntry = {
+    id: "continuum",
+    label: "אור נראה",
+    t: frame.t,
+    key: frame.key,
+    source: frame.source,
+    note: channels?.channels.find((c) => c.id === "continuum")?.note ??
+      "פני השמש (הפוטוספרה) באור נראה, בצבע מלאכותי. כתמי השמש כהים כי הם קרים יותר מהסביבה שלהם.",
+  };
+  const all = [visible, ...list];
+  const host = $("#channels");
+  const note = $("#channel-note");
+  all.forEach((c, i) => {
+    const label = document.createElement("label");
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "channel";
+    input.value = c.id;
+    input.checked = i === 0;
+    label.append(input, document.createTextNode(c.label));
+    host.append(label);
+    input.addEventListener("change", () => {
+      if (!input.checked) return;
+      const t = new Date(c.t);
+      // same file name every hour, so bust the 5-minute cache with the capture time
+      const src = c.id === "continuum" ? `${MEDIA_BASE}/${c.key}` : `${MEDIA_BASE}/${c.key}?t=${encodeURIComponent(c.t)}`;
+      showFrame(src, t, c.t, `תמונת השמש: ${c.label}, ${formatLocalTime(t)}`);
+      note.textContent = c.note;
+    });
+  });
+  note.textContent = visible.note;
+  $("#channels-box").hidden = false;
 }
 
 /** NOAA positions are for `valid_at`; rotate them to the moment of the image. */
@@ -343,7 +393,11 @@ function renderTimelapse(today: Today) {
 // --- main ------------------------------------------------------------------------------
 
 async function main() {
-  const [today, manifest] = await Promise.all([getJSON<Today>("today.json"), getJSON<Manifest>("manifest.json")]);
+  const [today, manifest, channels] = await Promise.all([
+    getJSON<Today>("today.json"),
+    getJSON<Manifest>("manifest.json"),
+    getJSON<Channels>("latest/channels.json"),
+  ]);
   const frame = manifest?.latest ?? today?.image ?? null;
   if (!today && !frame) {
     $("#load-error").hidden = false;
@@ -364,6 +418,7 @@ async function main() {
   const regions = regionsAt(today?.regions ?? [], frame);
   if (frame) {
     renderImage(frame);
+    if (frame.source !== "sdo-1700") setupChannels(channels, frame);
     const regionsLayer = svgEl("g", { class: "regions-layer" }, svg);
     const earthLayer = svgEl("g", { class: "earth-layer" }, svg);
     renderRegions(regionsLayer, frame, regions);

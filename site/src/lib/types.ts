@@ -10,6 +10,26 @@ export interface FrameEntry {
   b0: number; // degrees
 }
 
+/** latest/channels.json: the newest image in each wavelength, same framing as the hourly frame. */
+export interface ChannelEntry {
+  id: string;
+  label: string;
+  t: string;
+  key: string;
+  key_512?: string;
+  source: string;
+  cx?: number;
+  cy?: number;
+  r?: number;
+  b0?: number;
+  note: string;
+}
+
+export interface Channels {
+  generated_at: string;
+  channels: ChannelEntry[];
+}
+
 export interface Manifest {
   generated_at: string;
   latest: FrameEntry | null;
