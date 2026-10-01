@@ -68,6 +68,16 @@
 | ההשערה המקובלת: דלקת ענבייה (uveitis) עם גלאוקומה משנית; הוצעו גם אפשרויות אחרות (גלאוקומה של זווית סגורה) | Watson (2009), שם (התקציר). ניסוח זהיר: "ההשערה המקובלת", "הסיבה המדויקת לא ידועה". |
 | גלילאו כתב שבזכות ההקרנה אפשר לראות את הכתמים בלי לפגוע בעיניים | המכתב השני לוולזר, 14.8.1612; ציטוט ב-https://aty.sdsu.edu/vision/Welser.html |
 
+## ערוצי התמונה בדף הבית (`latest/channels.json`, ההערות ב-`pipeline/channels.py`)
+
+| טענה | מקור |
+|---|---|
+| 171 Å: יון Fe IX, עטרה שקטה ושכבת המעבר העליונה, טמפרטורה אופיינית log T = 5.8 (כ-630,000 K, "כ-600,000 מעלות") | NASA/SDO, "AIA channels": https://sdo.gsfc.nasa.gov/data/channels.php (נבדק 2026-10-01); J. R. Lemen et al. (2012), "The Atmospheric Imaging Assembly (AIA) on SDO", *Solar Physics* 275, 17, טבלה 1. https://doi.org/10.1007/s11207-011-9776-8 |
+| 304 Å: יון He II, כרומוספרה ושכבת המעבר, log T = 4.7 (כ-50,000 K) | שם (channels.php; Lemen et al. 2012, טבלה 1). פרומיננסים בשוליים: מראה מוכר בתמונות 304 של SDO; ניסוח זהיר ("לפעמים"). |
+| 1700 Å: קונטינואום, מינימום הטמפרטורה והפוטוספרה, log T = 3.7 | שם (channels.php; Lemen et al. 2012). 170 ננומטר הוא אולטרה-סגול רחוק, ולכן ההערה אומרת רק "אולטרה-סגול". |
+| מגנטוגרמה של HMI: לבן הוא קוטביות חיובית (שדה שמצביע אל הצופה), שחור הוא קוטביות שלילית (הרחק מהצופה) | NASA SVS, "SDO/HMI Magnetogram Full Disk View": https://svs.gsfc.nasa.gov/3697 ; P. H. Scherrer et al. (2012), "The Helioseismic and Magnetic Imager (HMI) Investigation for SDO", *Solar Physics* 275, 207. |
+| כתמי שמש כהים כי הם קרים מהסביבה | S. K. Solanki (2003), "Sunspots: An overview", *Astronomy and Astrophysics Review* 11, 153. https://doi.org/10.1007/s00159-003-0018-4 |
+
 ## אודות (`site/src/pages/about.astro`)
 
 הקרדיטים והרישוי של כל קובץ נמצאים ב-`content/credits.json`. זכויות SDO: https://sdo.gsfc.nasa.gov/data/rules.php ("SDO images and movies are not copyrighted unless explicitly noted").

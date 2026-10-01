@@ -232,7 +232,8 @@ button[aria-pressed="true"] {
 }
 
 .earth { cursor: grab; touch-action: none; outline: none; }
-.earth:active { cursor: grabbing; }
+.earth.dragging { cursor: grabbing; }
+.earth-ring { fill: none; stroke: #bfe1ff; stroke-width: 2; stroke-dasharray: 4 4; opacity: 0.85; }
 .earth:focus-visible .earth-body { stroke: #fff; stroke-width: 3; }
 .earth-hit { fill: transparent; }
 .earth-body { fill: #2f7fe0; stroke: #bfe1ff; stroke-width: 1.5; }
@@ -263,10 +264,11 @@ button[aria-pressed="true"] {
 }
 .bar-val { text-align: end; direction: ltr; }
 
-.xray-svg { display: block; width: 100%; height: auto; direction: ltr; touch-action: pan-y; }
+.xray-svg { display: block; max-width: 100%; height: auto; direction: ltr; touch-action: pan-y; }
+.xray-svg .now { font-weight: 600; }
 .xray-svg .grid { stroke: var(--rule); stroke-width: 1; }
-.xray-svg .axis-label { fill: var(--muted); font-family: var(--font-num); font-size: 11px; text-anchor: end; } /* a11y-allow-px: user units, fixed 560×190 viewBox */
-.xray-svg .time-label { fill: var(--muted); font-family: var(--font-num); font-size: 11px; } /* a11y-allow-px: user units, fixed 560×190 viewBox */
+.xray-svg .axis-label { fill: var(--muted); font-family: var(--font-num); font-size: 0.75rem; text-anchor: end; }
+.xray-svg .time-label { fill: var(--muted); font-family: var(--font-num); font-size: 0.75rem; }
 .xray-svg .xray-line { fill: none; stroke: var(--chart-1); stroke-width: 2; stroke-linejoin: round; }
 .xray-svg .crosshair { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
 .xray-svg .xray-dot { fill: var(--chart-1); stroke: var(--surface); stroke-width: 2; }

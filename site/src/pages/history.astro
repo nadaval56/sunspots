@@ -92,34 +92,38 @@ const EVENTS: Event[] = [
     <section class="block" aria-labelledby="compare-title">
       <h2 id="compare-title">גלילאו מול SDO</h2>
       <p>
-        בעמודה השמאלית: ציורים של גלילאו מיוני 1612, כפי שהודפסו בספר מ-1613. בעמודה הימנית: תמונות של הלוויין SDO מספטמבר 2026. בכל עמודה עובר יום אחד בין
-        התמונה העליונה לתחתונה.
+        בשורה העליונה: שני ציורים של גלילאו מיוני 1612, כפי שהודפסו בספר מ-1613. בשורה התחתונה: שתי תמונות של הלוויין SDO מספטמבר 2026.
+        בכל שורה עובר יום אחד בין התמונה הימנית לשמאלית.
       </p>
 
-      <div class="pairs">
-        <figure class="pair">
-          <div class="pair-row">
-            <figure class="sdo">
-              <img src={`${base}lab-archive/20260923.jpg`} width="760" height="760" loading="lazy" decoding="async"
-                alt="תמונת השמש של SDO מ-23 בספטמבר 2026: דיסקה כתומה עם קבוצת כתמים כהים מימין למרכז." />
-              <figcaption>23 בספטמבר 2026</figcaption>
-            </figure>
+      <div class="compare">
+        <figure class="compare-row">
+          <figcaption class="row-title">גלילאו, 1612 <span>ציור ביד, בהקרנה על דף</span></figcaption>
+          <div class="row-imgs">
             <figure class="drawing">
               <img src={`${base}history/galileo-1612-06-28.jpg`} width="760" height="760" loading="lazy" decoding="async"
                 alt="ציור של גלילאו מ-28 ביוני 1612: עיגול השמש עם כמה קבוצות כתמים, ובהן קבוצה מוארכת שמסומנת R." />
               <figcaption>28 ביוני 1612</figcaption>
             </figure>
-          </div>
-          <div class="pair-row">
-            <figure class="sdo">
-              <img src={`${base}lab-archive/20260924.jpg`} width="760" height="760" loading="lazy" decoding="async"
-                alt="תמונת השמש של SDO מ-24 בספטמבר 2026: אותה קבוצת כתמים זזה ימינה, לכיוון השוליים." />
-              <figcaption>24 בספטמבר 2026</figcaption>
-            </figure>
             <figure class="drawing">
               <img src={`${base}history/galileo-1612-06-29.jpg`} width="760" height="760" loading="lazy" decoding="async"
                 alt="ציור של גלילאו מ-29 ביוני 1612: הקבוצה R זזה ימינה, והכתם M שהיה בשוליים הימניים נעלם." />
               <figcaption>29 ביוני 1612</figcaption>
+            </figure>
+          </div>
+        </figure>
+        <figure class="compare-row">
+          <figcaption class="row-title">SDO, ‏2026 <span>צילום מהחלל באור נראה</span></figcaption>
+          <div class="row-imgs">
+            <figure class="sdo">
+              <img src={`${base}lab-archive/20260923.jpg`} width="760" height="760" loading="lazy" decoding="async"
+                alt="תמונת השמש של SDO מ-23 בספטמבר 2026: דיסקה כתומה עם קבוצת כתמים כהים מימין למרכז." />
+              <figcaption>23 בספטמבר 2026</figcaption>
+            </figure>
+            <figure class="sdo">
+              <img src={`${base}lab-archive/20260924.jpg`} width="760" height="760" loading="lazy" decoding="async"
+                alt="תמונת השמש של SDO מ-24 בספטמבר 2026: אותה קבוצת כתמים זזה ימינה, לכיוון השוליים." />
+              <figcaption>24 בספטמבר 2026</figcaption>
             </figure>
           </div>
         </figure>
@@ -191,37 +195,46 @@ const EVENTS: Event[] = [
     }
   }
 
-  .pair {
+  .compare {
     margin: 1rem 0 1.25rem;
     background: var(--plate);
     color: var(--plate-text);
     border-radius: var(--radius);
     padding: clamp(0.5rem, 2vw, 1rem);
     display: grid;
-    gap: 1rem;
-    max-width: 860px;
+    gap: clamp(0.75rem, 2.5vw, 1.25rem);
   }
-  .pair-row {
+  .compare figure {
+    margin: 0;
+  }
+  .row-title {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .row-title span {
+    font-weight: 400;
+    color: var(--plate-muted, #b8b3a8);
+    font-size: 0.9rem;
+    margin-inline-start: 0.5rem;
+  }
+  .row-imgs {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: clamp(0.5rem, 2vw, 1rem);
   }
-  .pair-row figure {
-    margin: 0;
-  }
-  .pair-row img {
+  .row-imgs img {
     display: block;
     width: 100%;
     height: auto;
     aspect-ratio: 1;
-    border-radius: var(--radius);
+    border-radius: var(--radius-sm, 11px);
   }
-  .pair-row figcaption {
+  .row-imgs figcaption {
     font-size: 0.9rem;
     padding-top: 0.35rem;
     text-align: center;
   }
-  .pair-row .drawing img {
-    background: #f4f1ea;
+  .drawing img {
+    background: #f4f1ea; /* paper behind the scan */
   }
 </style>

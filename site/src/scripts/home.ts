@@ -2,8 +2,8 @@
 // static site never needs a rebuild for new data.
 import { MEDIA_BASE } from "../config";
 import { EARTH_RADII_PER_SUN, heliographicToPixel, synodicRate, type Disk } from "../lib/solar";
-import type { FrameEntry, Manifest, Region, Today } from "../lib/types";
-import { formatLocalTime, formatUtc, relativeFromNow } from "../lib/format";
+import type { ChannelEntry, Channels, FrameEntry, Manifest, Region, Today } from "../lib/types";
+import { formatClock, formatLocalTime, formatUtc, relativeFromNow } from "../lib/format";
 
 const SVG = "http://www.w3.org/2000/svg";
 const $ = <T extends Element = HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -33,18 +33,68 @@ function diskInViewbox(f: FrameEntry): Disk {
   return { cx: f.cx * 1000, cy: f.cy * 1000, r: f.r * 1000 };
 }
 
+let shownT: Date | null = null;
+
+function showFrame(src: string, t: Date, iso: string, alt: string) {
+  const img = $<HTMLImageElement>("#sun");
+  img.src = src;
+  img.alt = alt;
+  shownT = t;
+  $("#frame-time").innerHTML = `${formatLocalTime(t)} (שעון ישראל) · <time datetime="${iso}" class="ltr">${formatUtc(t)}</time>`;
+  tickAge();
+}
+
+function tickAge() {
+  if (shownT) $("#frame-age").textContent = `(עודכן ${relativeFromNow(shownT)})`;
+}
+
 function renderImage(frame: FrameEntry) {
   const img = $<HTMLImageElement>("#sun");
+  img.addEventListener("load", () => $("#plate-empty")?.remove(), { once: true });
   const t = new Date(frame.t);
-  img.src = `${MEDIA_BASE}/${frame.key}`;
-  img.alt = `תמונת השמש באור נראה (SDO/HMI), ${formatLocalTime(t)}`;
-  img.addEventListener("load", () => $("#plate-empty").remove(), { once: true });
+  showFrame(`${MEDIA_BASE}/${frame.key}`, t, frame.t, `תמונת השמש באור נראה (SDO/HMI), ${formatLocalTime(t)}`);
+  setInterval(tickAge, 60_000);
+}
 
-  $("#frame-time").innerHTML = `${formatLocalTime(t)} · <time datetime="${frame.t}" class="ltr">${formatUtc(t)}</time>`;
-  const age = $("#frame-age");
-  const tick = () => (age.textContent = `(עודכן ${relativeFromNow(t)})`);
-  tick();
-  setInterval(tick, 60_000);
+/**
+ * Wavelength switcher. Every channel is cropped to the same framing as the hourly
+ * frame (pipeline/channels.py), so the region rings and the Earth stay aligned.
+ */
+function setupChannels(channels: Channels | null, frame: FrameEntry) {
+  const list = (channels?.channels ?? []).filter((c) => c.id !== "continuum");
+  if (!list.length) return;
+  const visible: ChannelEntry = {
+    id: "continuum",
+    label: "אור נראה",
+    t: frame.t,
+    key: frame.key,
+    source: frame.source,
+    note: channels?.channels.find((c) => c.id === "continuum")?.note ??
+      "פני השמש (הפוטוספרה) באור נראה, בצבע מלאכותי. כתמי השמש כהים כי הם קרים יותר מהסביבה שלהם.",
+  };
+  const all = [visible, ...list];
+  const host = $("#channels");
+  const note = $("#channel-note");
+  all.forEach((c, i) => {
+    const label = document.createElement("label");
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "channel";
+    input.value = c.id;
+    input.checked = i === 0;
+    label.append(input, document.createTextNode(c.label));
+    host.append(label);
+    input.addEventListener("change", () => {
+      if (!input.checked) return;
+      const t = new Date(c.t);
+      // same file name every hour, so bust the 5-minute cache with the capture time
+      const src = c.id === "continuum" ? `${MEDIA_BASE}/${c.key}` : `${MEDIA_BASE}/${c.key}?t=${encodeURIComponent(c.t)}`;
+      showFrame(src, t, c.t, `תמונת השמש: ${c.label}, ${formatLocalTime(t)}`);
+      note.textContent = c.note;
+    });
+  });
+  note.textContent = visible.note;
+  $("#channels-box").hidden = false;
 }
 
 /** NOAA positions are for `valid_at`; rotate them to the moment of the image. */
@@ -77,41 +127,55 @@ function setupEarth(svg: SVGSVGElement, layer: SVGGElement, frame: FrameEntry) {
   const disk = diskInViewbox(frame);
   const r = disk.r / EARTH_RADII_PER_SUN;
   const pos = { x: disk.cx, y: disk.cy + disk.r * 0.55 };
-  const g = svgEl("g", { class: "earth", tabindex: 0, role: "img", "aria-label": "כדור הארץ בקנה מידה" }, layer);
-  const hit = svgEl("circle", { r: Math.max(r * 4, 24), class: "earth-hit" }, g);
-  const body = svgEl("circle", { r, class: "earth-body" }, g);
-  const label = svgEl("text", { class: "earth-label" }, g);
+  // Drawn at the origin and moved with a transform: one attribute per frame, no layout work.
+  const g = svgEl("g", { class: "earth", tabindex: 0, role: "img", "aria-label": "כדור הארץ בקנה מידה. אפשר להזיז בחיצים." }, layer);
+  svgEl("circle", { r: 70, class: "earth-hit" }, g); // generous grab area (~4% of the image)
+  svgEl("circle", { r: Math.max(r * 5, 14), class: "earth-ring" }, g); // shows where the tiny Earth is
+  svgEl("circle", { r, class: "earth-body" }, g);
+  const label = svgEl("text", { x: 0, y: Math.max(r * 5, 14) + 30, class: "earth-label" }, g);
   label.textContent = "כדור הארץ";
-  const place = () => {
-    for (const c of [hit, body]) {
-      c.setAttribute("cx", String(pos.x));
-      c.setAttribute("cy", String(pos.y));
-    }
-    label.setAttribute("x", String(pos.x));
-    label.setAttribute("y", String(pos.y + r + 30));
-  };
+
+  const clamp = (v: number) => Math.min(1000, Math.max(0, v));
+  const place = () => g.setAttribute("transform", `translate(${pos.x.toFixed(1)} ${pos.y.toFixed(1)})`);
   place();
 
-  const toViewbox = (e: PointerEvent) => {
-    const pt = svg.createSVGPoint();
-    pt.x = e.clientX;
-    pt.y = e.clientY;
-    return pt.matrixTransform(svg.getScreenCTM()!.inverse());
-  };
-  let dragging = false;
-  g.addEventListener("pointerdown", (e) => {
-    dragging = true;
-    g.setPointerCapture(e.pointerId);
+  let ctm: DOMMatrix | null = null;
+  const toViewbox = (e: PointerEvent) => new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm!);
+  let grab: { dx: number; dy: number } | null = null;
+  let raf = 0;
+  let last: PointerEvent | null = null;
+
+  const move = (e: PointerEvent) => {
+    if (!grab) return;
     e.preventDefault();
-  });
-  g.addEventListener("pointermove", (e) => {
-    if (!dragging) return;
+    last = e;
+    if (raf) return; // at most one update per frame
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      if (!grab || !last) return;
+      const p = toViewbox(last);
+      pos.x = clamp(p.x - grab.dx);
+      pos.y = clamp(p.y - grab.dy);
+      place();
+    });
+  };
+  const end = () => {
+    grab = null;
+    g.classList.remove("dragging");
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", end);
+    window.removeEventListener("pointercancel", end);
+  };
+  g.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    ctm = svg.getScreenCTM()!.inverse(); // fixed for the whole drag
     const p = toViewbox(e);
-    pos.x = Math.min(1000, Math.max(0, p.x));
-    pos.y = Math.min(1000, Math.max(0, p.y));
-    place();
+    grab = { dx: p.x - pos.x, dy: p.y - pos.y }; // keep the grab point under the finger, no jump
+    g.classList.add("dragging");
+    window.addEventListener("pointermove", move, { passive: false });
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
   });
-  g.addEventListener("pointerup", () => (dragging = false));
   g.addEventListener("keydown", (e) => {
     const step = e.shiftKey ? 25 : 5;
     const d: Record<string, [number, number]> = {
@@ -122,24 +186,21 @@ function setupEarth(svg: SVGSVGElement, layer: SVGGElement, frame: FrameEntry) {
     };
     if (!d[e.key]) return;
     e.preventDefault();
-    pos.x = Math.min(1000, Math.max(0, pos.x + d[e.key][0]));
-    pos.y = Math.min(1000, Math.max(0, pos.y + d[e.key][1]));
+    pos.x = clamp(pos.x + d[e.key][0]);
+    pos.y = clamp(pos.y + d[e.key][1]);
     place();
   });
 }
 
-function setupToggle(button: HTMLButtonElement, layer: SVGGElement, onChange?: (on: boolean) => void) {
+function setupToggle(box: HTMLInputElement, layer: SVGGElement, onChange?: (on: boolean) => void) {
   const apply = () => {
-    const on = button.getAttribute("aria-pressed") === "true";
+    const on = box.checked;
     layer.style.display = on ? "" : "none";
     // the Earth must be reachable by mouse/keyboard while visible
     if (layer.classList.contains("earth-layer")) $("#overlay").classList.toggle("interactive", on);
     onChange?.(on);
   };
-  button.addEventListener("click", () => {
-    button.setAttribute("aria-pressed", String(button.getAttribute("aria-pressed") !== "true"));
-    apply();
-  });
+  box.addEventListener("change", apply);
   apply();
 }
 
@@ -153,6 +214,24 @@ function renderStats(today: Today, regions: Region[]) {
       : "";
   }
   $("#region-count").textContent = String(regions.length);
+
+  // R = 10g + s with today's NOAA regions, so the formula has real numbers in it.
+  const g = regions.length;
+  const s = regions.reduce((sum, r) => sum + (r.spots ?? 0), 0);
+  if (g > 0 && regions.every((r) => typeof r.spots === "number")) {
+    const R = 10 * g + s;
+    const official = today.sunspot_number?.value;
+    const box = $("#ssn-worked");
+    box.innerHTML =
+      `<b>היום:</b> ${g === 1 ? "קבוצה אחת" : `${g} קבוצות`} ו-${s} כתמים, ולכן ` +
+      `<span class="num" dir="ltr">10 × ${g} + ${s} = ${R}</span>.` +
+      (typeof official === "number"
+        ? official === R
+          ? " בדיוק המספר הרשמי של היום."
+          : ` המספר הרשמי של היום הוא ${official}.`
+        : "");
+    box.hidden = false;
+  }
 
   const tbody = $("#regions-table tbody");
   tbody.replaceChildren();
@@ -206,28 +285,55 @@ function renderXray(today: Today) {
     return;
   }
   $("#xray-class").textContent = x.latest.class;
+  $("#xray-when").textContent = `(${formatClock(new Date(x.latest.t))} שעון ישראל)`;
+  drawXray(host, x);
+  // The viewBox follows the real width so labels stay at their CSS size on phones.
+  let w = host.clientWidth;
+  new ResizeObserver(() => {
+    if (Math.abs(host.clientWidth - w) < 8) return;
+    w = host.clientWidth;
+    drawXray(host, x);
+  }).observe(host);
+}
 
-  // Time runs left→right as on the instruments, also in an RTL page (docs/DECISIONS.md).
-  const W = 560, H = 190, padL = 30, padR = 8, padT = 8, padB = 22;
+function drawXray(host: HTMLElement, x: NonNullable<Today["xray"]>) {
+  // Time runs left→right as on the instruments, also in an RTL page (DECISIONS #18).
+  const W = Math.max(300, Math.round(host.clientWidth || 560));
+  const H = 200, padL = 34, padR = 12, padT = 10, padB = 26;
   const t0 = new Date(x.series[0][0]).getTime();
   const t1 = new Date(x.series[x.series.length - 1][0]).getTime();
   const ly0 = -8.5, ly1 = -3.5;
   const sx = (t: number) => padL + ((t - t0) / Math.max(1, t1 - t0)) * (W - padL - padR);
   const sy = (f: number) => padT + (1 - (Math.log10(Math.max(f, 1e-9)) - ly0) / (ly1 - ly0)) * (H - padT - padB);
 
-  const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, class: "xray-svg", role: "img", "aria-label": `שטף קרני X ב-24 השעות האחרונות. עכשיו: ${x.latest.class}` });
+  const svg = svgEl("svg", {
+    viewBox: `0 0 ${W} ${H}`,
+    width: W,
+    height: H,
+    class: "xray-svg",
+    role: "img",
+    "aria-label": `שטף קרני X מהשמש ב-24 השעות האחרונות, מ-${formatClock(new Date(t0))} עד ${formatClock(new Date(t1))} שעון ישראל. המדידה האחרונה: ${x.latest.class}.`,
+  });
   for (const [name, f] of CLASS_LEVELS) {
     const y = sy(f);
     svgEl("line", { x1: padL, x2: W - padR, y1: y, y2: y, class: "grid" }, svg);
-    svgEl("text", { x: padL - 8, y: y - 4, class: "axis-label" }, svg).textContent = name;
+    svgEl("text", { x: padL - 8, y: y + 4, class: "axis-label" }, svg).textContent = name;
   }
+  // a tick every 6 hours on the Israel clock (00, 06, 12, 18), plus "now" at the right edge
+  const HOUR = 3600e3;
+  const ticks: number[] = [];
+  for (let t = Math.ceil(t0 / HOUR) * HOUR; t <= t1; t += HOUR) {
+    const h = Number(new Date(t).toLocaleString("en-GB", { timeZone: "Asia/Jerusalem", hour: "2-digit", hour12: false }));
+    if (h % 6 === 0 && sx(t) < W - padR - 40) ticks.push(t);
+  }
+  for (const t of ticks) {
+    svgEl("line", { x1: sx(t), x2: sx(t), y1: padT, y2: H - padB, class: "grid" }, svg);
+    svgEl("text", { x: sx(t), y: H - 8, class: "time-label", "text-anchor": "middle" }, svg).textContent = formatClock(new Date(t));
+  }
+  svgEl("text", { x: W - padR, y: H - 8, class: "time-label now", "text-anchor": "end" }, svg).textContent = "עכשיו";
+
   const pts = x.series.map(([t, f]) => [sx(new Date(t).getTime()), sy(f)] as const);
   svgEl("path", { d: "M" + pts.map((p) => `${p[0].toFixed(1)},${p[1].toFixed(1)}`).join("L"), class: "xray-line" }, svg);
-  for (const [frac, anchor] of [[0, "start"], [1, "end"]] as const) {
-    const t = new Date(t0 + frac * (t1 - t0));
-    svgEl("text", { x: sx(t.getTime()), y: H - 4, class: "time-label", "text-anchor": anchor }, svg).textContent =
-      `${String(t.getUTCHours()).padStart(2, "0")}:${String(t.getUTCMinutes()).padStart(2, "0")} UTC`;
-  }
 
   // hover: crosshair + tooltip
   const cross = svgEl("line", { y1: padT, y2: H - padB, class: "crosshair", visibility: "hidden" }, svg);
@@ -249,7 +355,7 @@ function renderXray(today: Today) {
     cross.setAttribute("visibility", "visible");
     dot.setAttribute("visibility", "visible");
     tip.hidden = false;
-    tip.innerHTML = `<span class="num ltr">${formatUtc(new Date(t))}</span><br><strong class="num">${classOf(f)}</strong>`;
+    tip.innerHTML = `<span class="num">${formatClock(new Date(t))}</span> · <strong class="num">${classOf(f)}</strong>`;
     const left = (px / W) * box.width;
     tip.style.left = `${Math.min(Math.max(left, 60), box.width - 60)}px`;
   });
@@ -287,7 +393,11 @@ function renderTimelapse(today: Today) {
 // --- main ------------------------------------------------------------------------------
 
 async function main() {
-  const [today, manifest] = await Promise.all([getJSON<Today>("today.json"), getJSON<Manifest>("manifest.json")]);
+  const [today, manifest, channels] = await Promise.all([
+    getJSON<Today>("today.json"),
+    getJSON<Manifest>("manifest.json"),
+    getJSON<Channels>("latest/channels.json"),
+  ]);
   const frame = manifest?.latest ?? today?.image ?? null;
   if (!today && !frame) {
     $("#load-error").hidden = false;
@@ -308,12 +418,13 @@ async function main() {
   const regions = regionsAt(today?.regions ?? [], frame);
   if (frame) {
     renderImage(frame);
+    if (frame.source !== "sdo-1700") setupChannels(channels, frame);
     const regionsLayer = svgEl("g", { class: "regions-layer" }, svg);
     const earthLayer = svgEl("g", { class: "earth-layer" }, svg);
     renderRegions(regionsLayer, frame, regions);
     setupEarth(svg, earthLayer, frame);
-    setupToggle($("#toggle-regions"), regionsLayer);
-    setupToggle($("#toggle-earth"), earthLayer, (on) => ($("#earth-hint").hidden = !on));
+    setupToggle($<HTMLInputElement>("#toggle-regions"), regionsLayer);
+    setupToggle($<HTMLInputElement>("#toggle-earth"), earthLayer, (on) => ($("#earth-hint").hidden = !on));
   }
   if (today) {
     renderStats(today, regions);

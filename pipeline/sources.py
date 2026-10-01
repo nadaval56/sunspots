@@ -55,6 +55,10 @@ SDO_1700 = SourceSpec("sdo-1700", "sdo", "1700", 1024, AIA_R_1AU, fallback_banne
 HOURLY_CHAIN = [JSOC_IC_1K, SDO_HMIIC, SDO_1700]
 DAILY_CHAIN = [JSOC_IC_4K, JSOC_IC_1K, SDO_HMIIC, SDO_1700]
 
+# Extra "filters" for the home page (pipeline/channels.py). Latest frame only.
+JSOC_M_1K = SourceSpec("jsoc-m", "jsoc", "M_1k", 1024, HMI_R_1AU)
+SDO_0171 = SourceSpec("sdo-171", "sdo", "0171", 1024, AIA_R_1AU)
+SDO_0304 = SourceSpec("sdo-304", "sdo", "0304", 1024, AIA_R_1AU)
 
 
 def synthetic_enabled() -> bool:

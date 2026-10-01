@@ -22,7 +22,8 @@ class Processed:
     r: float
 
 
-def crop_and_mask(rgb: np.ndarray, disk: solar.Disk) -> Processed:
+def crop_and_mask(rgb: np.ndarray, disk: solar.Disk, mask: bool = True) -> Processed:
+    """Square crop of side 2·1.05·R around the disk; black out beyond 1.012R if `mask`."""
     half = CROP_FACTOR * disk.r
     x0 = int(math.floor(disk.cx - half))
     y0 = int(math.floor(disk.cy - half))
@@ -35,9 +36,10 @@ def crop_and_mask(rgb: np.ndarray, disk: solar.Disk) -> Processed:
     out[sy0 - y0 : sy1 - y0, sx0 - x0 : sx1 - x0] = rgb[sy0:sy1, sx0:sx1, :3]
 
     ccx, ccy = disk.cx - x0, disk.cy - y0
-    yy, xx = np.mgrid[0:side, 0:side]
-    outside = (xx - ccx) ** 2 + (yy - ccy) ** 2 > (MASK_FACTOR * disk.r) ** 2
-    out[outside] = 0
+    if mask:
+        yy, xx = np.mgrid[0:side, 0:side]
+        outside = (xx - ccx) ** 2 + (yy - ccy) ** 2 > (MASK_FACTOR * disk.r) ** 2
+        out[outside] = 0
     return Processed(Image.fromarray(out), ccx / side, ccy / side, disk.r / side)
 
 

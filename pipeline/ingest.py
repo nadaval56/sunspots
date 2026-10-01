@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Callable, Iterable, Iterator
 
-from . import config, process, solar, sources, synthetic
+from . import channels, config, process, solar, sources, synthetic
 from .sources import SourceSpec
 from .storage import Storage, get_json, get_storage, put_json
 from .validate import ValidationError, ValidFrame, validate
@@ -50,8 +50,8 @@ def http_fetcher(spec: SourceSpec, target: datetime) -> Iterator[Download]:
 
 
 def synthetic_fetcher(spec: SourceSpec, target: datetime) -> Iterator[Download]:
-    if spec.kind != "jsoc":
-        return
+    if spec.kind != "jsoc" or not spec.product.startswith("Ic"):
+        return  # extra channels (pipeline/channels.py) have no synthetic stand-in
     t = target.replace(minute=(target.minute // 15) * 15, second=0, microsecond=0)
     size = 2048 if spec.size >= 2048 else 1024  # keep 4k synthetic renders cheap
     yield t, 200, synthetic.render_jpeg(t, size)
@@ -154,26 +154,42 @@ def run(
     fetch: Fetcher | None = None,
     chain: list[SourceSpec] | None = None,
     write_manifest: bool = True,
+    with_channels: bool | None = None,
 ) -> dict | None:
+    """Ingest one hour. with_channels (default: write_manifest) also refreshes
+    the extra channels in latest/ (pipeline/channels.py); they never affect
+    the main frame or the return value."""
     now = now or utcnow()
-    acq, failures = acquire(target, chain or sources.HOURLY_CHAIN, fetch or default_fetcher())
+    fetch = fetch or default_fetcher()
+    acq, failures = acquire(target, chain or sources.HOURLY_CHAIN, fetch)
     entry = store_frame(storage, acq) if acq else None
     if write_manifest:
         update_manifest(storage, entry, now)
         prune(storage, now)
-    append_log(
-        storage,
-        now,
-        {
-            "at": iso(now),
-            "target": iso(target),
-            "ok": entry is not None,
-            "source": entry["source"] if entry else None,
-            "frame": entry["t"] if entry else None,
-            "failures": failures,
-        },
-    )
+    record = {
+        "at": iso(now),
+        "target": iso(target),
+        "ok": entry is not None,
+        "source": entry["source"] if entry else None,
+        "frame": entry["t"] if entry else None,
+        "failures": failures,
+    }
+    if write_manifest if with_channels is None else with_channels:
+        record["channels"] = run_channels(storage, entry, acq, target, now, fetch)
+    append_log(storage, now, record)
     return entry
+
+
+def run_channels(
+    storage: Storage, entry: dict | None, acq: Acquired | None, target: datetime, now: datetime, fetch: Fetcher
+) -> dict:
+    # The continuum disk doubles as the magnetogram's geometry only when both
+    # are JSOC 1k HMI quick-looks (identical framing at the same time).
+    hmi_disk = acq.frame.disk if acq and acq.spec == sources.JSOC_IC_1K else None
+    try:
+        return channels.run(storage, entry, target, now, fetch, hmi_disk)
+    except Exception as e:  # noqa: BLE001 - extra channels must never fail the run
+        return {"error": str(e)}
 
 
 def main(argv: list[str] | None = None) -> int:
