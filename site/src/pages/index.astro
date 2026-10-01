@@ -22,6 +22,7 @@ import Base from "../layouts/Base.astro";
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
           </button>
         </div>
+        <p id="channel-note" class="channel-note"></p>
         <div class="plate-frame" id="plate-frame">
           <img id="sun" alt="" width="1024" height="1024" decoding="async" fetchpriority="high" />
           <svg id="overlay" viewBox="0 0 1000 1000" aria-hidden="true"></svg>
@@ -32,7 +33,6 @@ import Base from "../layouts/Base.astro";
             <span id="frame-time">—</span>
             <span id="frame-age" class="age"></span>
           </p>
-          <p id="channel-note" class="channel-note"></p>
         </figcaption>
       </figure>
       <fieldset class="plate-options">
@@ -240,10 +240,25 @@ import Base from "../layouts/Base.astro";
     font-size: 0.8rem;
     color: var(--plate-muted);
   }
+  .channel-note:empty {
+    display: none;
+  }
   .channel-note {
-    margin: 0.4rem 0 0;
+    margin: 0 0 0.6rem;
+    text-align: center;
+    text-wrap: pretty;
+    /* the notes run one to three lines; a fixed box keeps the photo from jumping */
+    min-height: 3lh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--plate-muted);
     font-size: 0.9rem;
+  }
+  @media (max-width: 380px) {
+    .channel-note {
+      min-height: 4lh;
+    }
   }
   .plate figcaption {
     padding-top: 0.75rem;
