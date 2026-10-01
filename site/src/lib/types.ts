@@ -55,3 +55,17 @@ export interface LabFrame {
   r: number;
   b0: number;
 }
+
+/** lab.json (pipeline) and lab-archive/index.json (the bundled sample). */
+export interface LabData {
+  generated_at: string;
+  frames: LabFrame[];
+  /** Example track: normalized [x, y] per YYYY-MM-DD, or null (BRIEF §6.4). */
+  example_track: Record<string, [number, number]> | null;
+  credit?: string;
+}
+
+/** daily/index.json: the permanent daily archive. */
+export interface DailyIndex {
+  days: LabFrame[];
+}

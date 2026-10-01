@@ -1,10 +1,698 @@
 ---
 import Base from "../layouts/Base.astro";
-import Upcoming from "../components/Upcoming.astro";
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 ---
 
-<Base title="מעבדת סיבוב השמש">
-  <Upcoming title="מעבדת סיבוב השמש" milestone="M4">
-    <p>סמנו כתם אחד לאורך כמה ימים, וחשבו בעצמכם כמה זמן לוקח לשמש להסתובב סביב עצמה, כמו שעשה גלילאו ב-1612.</p>
-  </Upcoming>
+<Base
+  title="מעבדת סיבוב השמש"
+  description="עוקבים אחרי כתם שמש לאורך כמה ימים בתמונות אמיתיות של SDO, ומחשבים את תקופת הסיבוב של השמש, כמו גלילאו ב-1612."
+>
+  <div class="wrap lab" id="lab" data-archive={`${base}lab-archive/`}>
+    <header class="lab-head">
+      <p class="eyebrow ltr" id="eyebrow">SDO / HMI Continuum · 06:00 UTC</p>
+      <h1>מעבדת סיבוב השמש</h1>
+      <p class="lede">
+        תמונות אמיתיות של השמש מהלוויין SDO, אחת לכל יום. עוקבים אחרי כתם שמש מיום ליום, ומחשבים ממנו כמה זמן לוקח לשמש להסתובב סביב
+        עצמה. זה הניסוי שגלילאו עשה ב-1612, עם נתונים של ימינו.
+      </p>
+      <ol class="steps">
+        <li>בוחרים כתם כהה ולוחצים עליו. התצוגה עוברת אוטומטית ליום הבא.</li>
+        <li>מוצאים את אותו כתם, שזז מעט מערבה (ימינה), ולוחצים שוב. אפשר לגרור סימון כדי לדייק.</li>
+        <li>אחרי שלושה ימים ומעלה מופיעה תקופת הסיבוב בצד.</li>
+      </ol>
+    </header>
+
+    <section class="source panel" aria-labelledby="source-title">
+      <h2 id="source-title" class="visually-hidden">מקור התמונות</h2>
+      <div class="source-row">
+        <div class="seg" role="group" aria-label="מקור התמונות">
+          <button type="button" data-mode="archive" aria-pressed="true">ארכיון דוגמה</button>
+          <button type="button" data-mode="week" aria-pressed="false">השבוע האחרון</button>
+          <button type="button" data-mode="range" aria-pressed="false">בחירת תאריכים</button>
+        </div>
+        <label class="range-pick" id="range-pick" hidden>
+          14 ימים החל מ-
+          <input type="date" id="range-start" />
+        </label>
+      </div>
+      <p class="source-note" id="source-note" aria-live="polite"></p>
+      <p class="banner-warn" id="source-error" role="status" hidden></p>
+    </section>
+
+    <div class="lab-grid">
+      <section class="plate" aria-label="תמונת השמש">
+        <div class="platebar">
+          <div class="chips" role="group" aria-label="מסלול פעיל">
+            <button type="button" class="chip" id="chip-0" aria-pressed="true" aria-label="סימון כתם א׳ (תכלת)">
+              <span class="sw sw-1" aria-hidden="true"></span>כתם א׳
+            </button>
+            <button type="button" class="chip" id="chip-1" aria-pressed="false" aria-label="סימון כתם ב׳ (ירוק)">
+              <span class="sw sw-2" aria-hidden="true"></span>כתם ב׳
+            </button>
+          </div>
+          <p class="daylabel ltr" id="daylabel"></p>
+        </div>
+
+        <div class="canvasbox">
+          <canvas
+            id="sun-canvas"
+            width="760"
+            height="760"
+            tabindex="0"
+            aria-label="תמונת השמש של היום הנבחר. לחיצה מסמנת את מיקום הכתם. חץ שמאלה עובר ליום הבא וחץ ימינה ליום הקודם."
+            aria-describedby="plate-hint"></canvas>
+          <p class="plate-empty" id="plate-empty">טוען תמונות…</p>
+        </div>
+
+        <div class="days" id="days" role="group" aria-label="בחירת יום"></div>
+
+        <div class="toggles">
+          <label><input type="checkbox" id="opt-grid" checked /> רשת קווי אורך ורוחב</label>
+          <label><input type="checkbox" id="opt-trail" checked /> סימונים מימים אחרים</label>
+          <label><input type="checkbox" id="opt-advance" checked /> מעבר אוטומטי ליום הבא</label>
+        </div>
+
+        <div class="plate-tools">
+          <button type="button" id="btn-del" aria-label="מחיקת הסימון של המסלול הפעיל ביום המוצג">מחק סימון ביום הזה</button>
+          <button type="button" id="btn-clear" aria-label="מחיקת כל הסימונים של המסלול הפעיל">נקה את המסלול</button>
+          <button type="button" id="btn-example" aria-label="טעינת מסלול דוגמה למסלול הפעיל">טען דוגמה</button>
+        </div>
+
+        <p class="hint" id="plate-hint">
+          צפון למעלה, מערב ימינה, כמו שהשמש נראית מכדור הארץ. זה אור נראה, כמו שגלילאו ראה בהקרנה על נייר: כתמים כהים על רקע בהיר. השוליים
+          כהים יותר כי שם מסתכלים לשכבות גבוהות וקרות יותר של השמש (התכהות שוליים). במקלדת: חץ שמאלה ליום הבא, חץ ימינה ליום הקודם.
+        </p>
+        <p class="visually-hidden" id="lab-live" aria-live="polite"></p>
+      </section>
+
+      <div class="notebook">
+        <section class="card" aria-labelledby="res-title">
+          <h2 id="res-title">תוצאות</h2>
+          <div class="results" id="results"></div>
+          <label class="b0-toggle">
+            <input type="checkbox" id="opt-b0" checked />
+            תיקון לנטיית ציר השמש <span class="num ltr" style="white-space:nowrap">(B₀ = <span id="b0val"></span>)</span>
+          </label>
+          <p class="hint">
+            <strong>B₀</strong> היא הזווית שבה הקוטב הצפוני של השמש נוטה אלינו. בסוף ספטמבר היא כ-7°. כבו את התיקון, וראו איך קו הרוחב של
+            הכתם "נודד" מיום ליום.
+          </p>
+        </section>
+
+        <section class="card" aria-labelledby="c1-title">
+          <h3 id="c1-title">קו האורך של הכתם לאורך הימים</h3>
+          <div class="charthost" id="chart1"></div>
+          <div class="legend">
+            <span><span class="sw sw-c1" aria-hidden="true"></span>כתם א׳</span>
+            <span><span class="sw sw-c2" aria-hidden="true"></span>כתם ב׳</span>
+            <span><span class="lg lg-line" aria-hidden="true"></span>התאמה לקו ישר</span>
+          </div>
+          <p class="hint">קו ישר פירושו מהירות סיבוב קבועה. השיפוע הוא כמה מעלות הכתם עובר ביום.</p>
+        </section>
+
+        <section class="card" aria-labelledby="c2-title">
+          <h3 id="c2-title">מה ראה גלילאו: המיקום על המסך</h3>
+          <div class="charthost" id="chart2"></div>
+          <div class="legend">
+            <span><span class="lg lg-line" aria-hidden="true"></span>נקודה על כדור מסתובב</span>
+            <span><span class="lg lg-dash" aria-hidden="true"></span>מהירות קבועה על המסך</span>
+            <span><span class="lg lg-dot" aria-hidden="true"></span>ירח במסלול ברדיוס d·R</span>
+          </div>
+          <p class="hint">
+            על המסך הכתם זז מהר במרכז ו"מאט" ליד השוליים. ערך חיובי הוא מערב. אם הכתמים היו גופים שמקיפים את השמש, כמו שטען שיינר, הם היו
+            נעים כמעט במהירות קבועה. הנקודות שמדדתם יושבות על העקומה של כדור מסתובב.
+          </p>
+
+          <div class="scheiner">
+            <h4>מה טען שיינר</h4>
+            <label for="scheiner-d">
+              רדיוס המסלול של ירח משוער: <span class="num ltr" id="scheiner-d-val">d = 1.00 R</span>
+            </label>
+            <input type="range" id="scheiner-d" min="1" max="3" step="0.05" value="1.4" aria-describedby="scheiner-frac" />
+            <p id="scheiner-frac" class="scheiner-frac" aria-live="polite"></p>
+            <p class="hint">
+              ירח שמקיף את השמש נראה מולה רק בחלק מהסיבוב: <span class="num ltr">asin(1/d)/π</span>. הזיזו את המחוון ובדקו איזה רדיוס מתאים
+              לנקודות שמדדתם.
+            </p>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="t-title">
+          <h3 id="t-title">טבלת מדידות</h3>
+          <div class="table-scroll">
+            <table id="measure-table">
+              <caption class="visually-hidden">המדידות של שני המסלולים</caption>
+              <thead>
+                <tr>
+                  <th scope="col">מסלול</th>
+                  <th scope="col">תאריך ושעה (UTC)</th>
+                  <th scope="col">קו אורך L</th>
+                  <th scope="col">קו רוחב B</th>
+                  <th scope="col">x על המסך</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="explain" aria-labelledby="how-title">
+      <h2 id="how-title">איך זה מחושב</h2>
+      <p>
+        מנרמלים כל לחיצה ביחס למרכז הדיסקה ולרדיוס שלה: x מערבה, y צפונה, ושניהם ביחידות של רדיוס השמש. מהם מחשבים קו רוחב B וקו אורך L
+        ביחס למרידיאן המרכזי, הקו שעובר באמצע הדיסקה מצפון לדרום.
+      </p>
+      <pre class="formula" dir="ltr">z = √(1 − x² − y²)
+sin B = y·cos B₀ + z·sin B₀
+tan L = x / (z·cos B₀ − y·sin B₀)</pre>
+      <p>
+        השיפוע של L מול הזמן נותן את המהירות הזוויתית ω, במעלות ליום. ‏360/ω היא התקופה <strong>הסינודית</strong>, כפי שהיא נראית מכדור
+        הארץ. כדור הארץ מתקדם במסלולו סביב השמש באותו כיוון, ולכן התקופה <strong>הסידרית</strong>, ביחס לכוכבים, קצרה יותר:
+      </p>
+      <pre class="formula" dir="ltr">1/P_sidereal = 1/P_synodic + 1/365.256</pre>
+      <p>
+        הערך הצפוי מחושב לפי הנוסחה של Snodgrass ו-Ulrich (1990) לקו הרוחב שנמדד. השמש מסתובבת מהר יותר בקו המשווה, בכ-25 יום, ולאט
+        יותר קרוב לקטבים. זה <strong>סיבוב דיפרנציאלי</strong>: השמש אינה גוף קשיח.
+      </p>
+      <pre class="formula" dir="ltr">ω(B) = 14.713 − 2.396·sin²B − 1.787·sin⁴B   [°/day, sidereal]</pre>
+      <p>
+        <strong>אתגר:</strong> בארכיון הדוגמה, הכתם של מסלול הדוגמה נעלם מעבר לשוליים כבר אחרי 27.9. ב-24.9 יש כתם קטן בחצי הצפוני,
+        משמאל למרכז. עקבו אחריו עם כתם ב׳ כמה ימים שתצליחו, והשוו את קו הרוחב והתקופה לכתם א׳. שימו לב: כתמים קטנים משתנים, מתפצלים
+        ונעלמים, ולכן קשה לדעת אם זה עדיין אותו כתם.
+      </p>
+    </section>
+
+    <section class="explain" aria-labelledby="knew-title">
+      <h2 id="knew-title">מה ידעו ב-1612 ומה לא</h2>
+      <p>
+        גלילאו טען שהכתמים נמצאים על פני השמש עצמה. כריסטוף שיינר, שכתב בשם הבדוי "Apelles", הציע בהתחלה שהם גופים קטנים שמקיפים את השמש
+        קרוב אליה. בידי גלילאו היו רק תצפיות וגאומטריה: כתם זז מהר במרכז הדיסקה ולאט ליד השוליים, ונראה צר יותר ליד השוליים. כך בדיוק
+        נראה סימן על כדור מסתובב. זה הטיעון שבגרף "מה ראה גלילאו" למעלה.
+      </p>
+      <p>הרבה ממה שנראה לנו היום מובן מאליו עוד לא היה ידוע:</p>
+      <ul class="facts">
+        <li>
+          <strong class="num">1619</strong> קפלר פרסם את החוק השלישי שלו, שקושר בין המרחק של כוכב לכת מהשמש לבין זמן ההקפה שלו.
+        </li>
+        <li><strong class="num">1672</strong> המרחק לשמש נמדד לראשונה בצורה סבירה, מתצפיות על מאדים מפריז ומגיאנה הצרפתית.</li>
+        <li><strong class="num">1687</strong> ניוטון פרסם את חוק הכבידה, שמסביר למה גוף במסלול נע במהירות שהוא נע בה.</li>
+      </ul>
+      <p>
+        אחרי כל אלה אפשר לחשב: ירח שחולף ממש מעל פני השמש היה חייב להקיף אותה בכ-<strong>2.8 שעות</strong>, במהירות של כ-<strong
+          >437 ק"מ בשנייה</strong
+        >. כתם שמש ליד קו המשווה נע בכ-<strong>2 ק"מ בשנייה</strong>, ומשלים סיבוב בכ-25 יום. שום ירח לא יכול להקיף כל כך קרוב ולאט. לגלילאו
+        לא היה החישוב הזה. הוא הגיע למסקנה הנכונה רק מהצורה של התנועה.
+      </p>
+      <pre class="formula" dir="ltr">v = √(GM/R) ≈ √(1.327·10²⁰ / 6.957·10⁸) m/s ≈ 437 km/s
+P = 2πR / v ≈ 10,000 s ≈ 2.8 h
+v_spot ≈ 2π·695,700 km / 25.4 d ≈ 2.0 km/s</pre>
+    </section>
+
+    <p class="credit hint" id="lab-credit">
+      מקור התמונות: <span lang="en" dir="ltr">Courtesy of NASA/SDO and the HMI science team</span>, דרך הארכיון JSOC של אוניברסיטת
+      סטנפורד. אלה תמונות Continuum Intensity באור נראה (6173 Å), בצביעה הכתומה של צוות HMI, אחת לכל יום ב-06:00 UTC. החישוב מניח שהתמונות
+      מכוונות צפון-למעלה, ומזניח את ההבדל בין מיקום הלוויין למיקום כדור הארץ.
+    </p>
+  </div>
 </Base>
+
+<script>
+  import "../scripts/lab";
+</script>
+
+<style is:global>
+  .lab .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin: 1.5rem 0 0.25rem;
+    text-align: right;
+  }
+  .lab-head {
+    max-width: 70ch;
+  }
+  .lab .lede {
+    color: var(--muted);
+  }
+  .lab .steps {
+    margin: 0 0 1rem;
+    padding-inline-start: 1.4rem;
+    display: grid;
+    gap: 0.2rem;
+  }
+  .lab .hint {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  /* data source */
+  .lab .source {
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .source-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+  }
+  .seg {
+    display: inline-flex;
+    flex-wrap: wrap;
+  }
+  .seg button {
+    margin-inline-end: -1px;
+  }
+  .range-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .range-pick[hidden] {
+    display: none;
+  }
+  .range-pick input {
+    font: inherit;
+    font-family: var(--font-mono);
+    min-height: 40px;
+    padding: 0.2rem 0.5rem;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .source-note {
+    margin: 0.5rem 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .source .banner-warn {
+    margin: 0.5rem 0 0;
+  }
+
+  .lab-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: clamp(1.25rem, 3vw, 2rem);
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .lab-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  /* the plate: always dark */
+  .lab .plate {
+    background: var(--plate);
+    color: var(--plate-text);
+    border-radius: var(--radius);
+    padding: clamp(0.5rem, 2vw, 0.9rem);
+    display: grid;
+    gap: 0.75rem;
+    position: sticky;
+    top: 1rem;
+  }
+  @media (max-width: 900px) {
+    .lab .plate {
+      position: static;
+    }
+  }
+  .lab .plate .hint {
+    color: #9fb0c1;
+    margin: 0;
+  }
+  .platebar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .daylabel {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+  }
+  .canvasbox {
+    position: relative;
+    aspect-ratio: 1;
+  }
+  #sun-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    cursor: crosshair;
+  }
+  .plate-empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    pointer-events: none;
+  }
+  .plate-empty[hidden] {
+    display: none;
+  }
+  .lab .plate button,
+  .lab .plate .chip {
+    background: transparent;
+    color: var(--plate-text);
+    border-color: #3a4552;
+  }
+  .lab .plate button:hover {
+    border-color: #8fb4d9;
+  }
+  .lab .plate button[aria-pressed="true"],
+  .lab .plate .day[aria-current="true"] {
+    background: #10283d;
+    border-color: var(--track-1);
+    color: #fff;
+  }
+  .lab .plate button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .lab .plate :focus-visible {
+    outline-color: #8fd3ff;
+  }
+  .chips,
+  .plate-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .sw {
+    display: inline-block;
+    inline-size: 11px;
+    block-size: 11px;
+    border-radius: 50%;
+    flex: none;
+  }
+  .sw-1 {
+    background: var(--track-1);
+  }
+  .sw-2 {
+    background: var(--track-2);
+  }
+  .sw-c1 {
+    background: var(--chart-1);
+  }
+  .sw-c2 {
+    background: var(--chart-2);
+  }
+  .days {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+    gap: 4px;
+  }
+  .lab .plate .day {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    min-height: 40px;
+    padding: 4px 0 3px;
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    color: #aeb9c6;
+    border-color: #26303b;
+  }
+  .day .dots {
+    display: flex;
+    gap: 3px;
+    block-size: 6px;
+  }
+  .day .dot {
+    inline-size: 6px;
+    block-size: 6px;
+    border-radius: 50%;
+  }
+  .toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    font-size: 0.92rem;
+  }
+  .b0-toggle {
+    display: block;
+    cursor: pointer;
+  }
+  .b0-toggle input {
+    vertical-align: -0.15em;
+    margin-inline-end: 0.4rem;
+  }
+  .toggles label {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+    cursor: pointer;
+  }
+  .toggles input,
+  .b0-toggle input {
+    inline-size: 1.05rem;
+    block-size: 1.05rem;
+  }
+
+  /* the notebook */
+  .lab .notebook {
+    display: grid;
+    gap: 1.25rem;
+    min-width: 0;
+  }
+  .lab .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    display: grid;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+  .lab .card > * {
+    margin: 0;
+  }
+  .results {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+  @media (max-width: 480px) {
+    .results {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .res {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    padding: 0.75rem;
+    background: var(--surface-2);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    min-width: 0;
+  }
+  .res .name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+  }
+  .res .big {
+    font-family: var(--font-mono);
+    font-size: 1.75rem;
+    line-height: 1.1;
+  }
+  .res .big small {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .res dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.15rem 0.6rem;
+    font-size: 0.92rem;
+  }
+  .res dt {
+    color: var(--muted);
+  }
+  .res dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    direction: ltr;
+    text-align: left;
+  }
+  .res .empty {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin: 0;
+  }
+  .badge {
+    font-size: 0.75rem;
+    font-weight: 400;
+    border: 1px solid currentColor;
+    border-radius: var(--radius);
+    padding: 0 0.4rem;
+    color: var(--muted);
+  }
+
+  .charthost {
+    position: relative;
+  }
+  .lab-chart {
+    display: block;
+    width: 100%;
+    height: auto;
+    direction: ltr;
+    overflow: visible;
+  }
+  .lab-chart text {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    fill: var(--muted);
+  }
+  .lab-chart .ttl {
+    font-family: var(--font-body);
+    font-size: 13px;
+  }
+  .lab-chart .grid {
+    stroke: var(--rule);
+    stroke-width: 1;
+  }
+  .lab-chart .axis {
+    stroke: var(--muted);
+    stroke-width: 1;
+  }
+  .lab-chart .limb {
+    stroke: var(--border);
+    stroke-dasharray: 2 3;
+  }
+  .lab-chart .pt {
+    stroke: var(--surface);
+    stroke-width: 2;
+  }
+  .lab-chart .hit {
+    fill: transparent;
+  }
+  .lab-chart .empty-msg {
+    font-family: var(--font-body);
+    font-size: 14px;
+    text-anchor: middle;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .legend > span {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  .lg {
+    display: inline-block;
+    inline-size: 20px;
+    block-size: 0;
+    border-top: 2px solid var(--muted);
+  }
+  .lg-dash {
+    border-top-style: dashed;
+  }
+  .lg-dot {
+    border-top-style: dotted;
+    border-top-width: 3px;
+  }
+
+  .scheiner {
+    border-top: 1px solid var(--rule);
+    padding-top: 0.75rem;
+    display: grid;
+    gap: 0.4rem;
+  }
+  .scheiner h4 {
+    margin: 0;
+    font-size: 1rem;
+  }
+  .scheiner > * {
+    margin: 0;
+  }
+  .scheiner input[type="range"] {
+    inline-size: 100%;
+    accent-color: var(--accent);
+    min-height: 32px;
+  }
+  .scheiner-frac {
+    font-size: 0.95rem;
+  }
+
+  .lab .table-scroll {
+    overflow-x: auto;
+  }
+  .lab table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.9rem;
+  }
+  .lab th,
+  .lab td {
+    text-align: start;
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  .lab th {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+  .lab td.n {
+    font-family: var(--font-mono);
+    direction: ltr;
+    text-align: end;
+  }
+
+  .explain {
+    max-width: 72ch;
+    margin-top: 2.5rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 1.5rem;
+  }
+  .formula {
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+    text-align: left;
+    background: var(--surface-2);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 0.6rem 0.8rem;
+    overflow-x: auto;
+    margin: 0 0 1rem;
+  }
+  .facts {
+    padding-inline-start: 1.2rem;
+    display: grid;
+    gap: 0.35rem;
+    margin: 0 0 1rem;
+  }
+  .facts strong {
+    margin-inline-end: 0.4rem;
+  }
+  .lab .credit {
+    margin-top: 2rem;
+    max-width: 72ch;
+  }
+</style>
