@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Callable, Iterable, Iterator
 
-from . import channels, config, process, solar, sources, synthetic
+from . import channels, config, noaa, process, solar, sources, synthetic
 from .sources import SourceSpec
 from .storage import Storage, get_json, get_storage, put_json
 from .validate import ValidationError, ValidFrame, validate
@@ -192,13 +192,37 @@ def run_channels(
         return {"error": str(e)}
 
 
+XRAY_KEY = "xray.json"
+
+
+def refresh_xray(storage: Storage, now: datetime | None = None) -> str | None:
+    """Hourly copy of the GOES X-ray curve for the home page, so it is never more
+    than an hour old (today.json is rebuilt only once a day). 49 hours from the
+    3-day file: the page shows all of yesterday plus today, on the Israel clock.
+    Returns an error message, or None. Never raises: the graph must not fail the ingest."""
+    if sources.synthetic_enabled():
+        return None
+    try:
+        x = noaa.xray_series(noaa._get_json(noaa.URLS["xrays_3day"]), hours=49)
+    except Exception as e:  # noqa: BLE001
+        return f"xrays: {e}"
+    if not x:
+        return "xrays: no valid samples"
+    put_json(storage, XRAY_KEY, {"generated_at": iso(now or utcnow()), **x}, "max-age=300")
+    return None
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--target", help="ISO UTC time; default: last hour − 30 min")
     args = ap.parse_args(argv)
     now = utcnow()
     target = parse_iso(args.target) if args.target else target_time(now)
-    entry = run(get_storage(), target, now)
+    storage = get_storage()
+    entry = run(storage, target, now)
+    xray_error = refresh_xray(storage, now)
+    if xray_error:
+        print(f"ingest: {xray_error}", file=sys.stderr)
     if entry is None:
         print(f"ingest: no valid frame for {iso(target)}", file=sys.stderr)
         return 1
