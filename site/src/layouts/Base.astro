@@ -41,7 +41,10 @@ const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
             <circle cx="21" cy="13" r="2.4" fill="#2a1600" />
             <circle cx="11.5" cy="19" r="1.5" fill="#2a1600" />
           </svg>
-          <span>{SITE_NAME}</span>
+          <span class="brand-text">
+            <span class="brand-name">{SITE_NAME}</span>
+            <span class="brand-tag">{SITE_TAGLINE}</span>
+          </span>
         </a>
         <nav aria-label="ניווט ראשי">
           <ul>
@@ -102,9 +105,19 @@ const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
     color: var(--text);
     text-decoration: none;
   }
+  .brand-text {
+    display: grid;
+    line-height: 1.15;
+  }
+  .brand-tag {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
   .mark {
-    width: 28px;
-    height: 28px;
+    width: 34px;
+    height: 34px;
   }
   nav ul {
     list-style: none;
