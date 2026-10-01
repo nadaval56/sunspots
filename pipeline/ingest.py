@@ -1,0 +1,194 @@
+"""Hourly ingest (BRIEF §5.1).
+
+    python -m pipeline.ingest                 # current hour
+    python -m pipeline.ingest --target 2026-09-23T06:00Z
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
+from typing import Callable, Iterable, Iterator
+
+from . import config, process, solar, sources, synthetic
+from .sources import SourceSpec
+from .storage import Storage, get_json, get_storage, put_json
+from .validate import ValidationError, ValidFrame, validate
+
+MANIFEST_KEY = "manifest.json"
+FRAME_CACHE = "public, max-age=31536000, immutable"
+MAX_CANDIDATES_PER_SOURCE = 3
+
+# (frame_time, http_status, bytes)
+Download = tuple[datetime, int, bytes]
+Fetcher = Callable[[SourceSpec, datetime], Iterable[Download]]
+
+
+def utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def iso(t: datetime) -> str:
+    return t.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def parse_iso(s: str) -> datetime:
+    return datetime.fromisoformat(s.replace("Z", "+00:00"))
+
+
+def target_time(now: datetime) -> datetime:
+    """Last whole hour minus 30 minutes, so JSOC has time to publish."""
+    return now.replace(minute=0, second=0, microsecond=0) - timedelta(minutes=30)
+
+
+def http_fetcher(spec: SourceSpec, target: datetime) -> Iterator[Download]:
+    for t, url in sources.candidates(spec, target)[:MAX_CANDIDATES_PER_SOURCE]:
+        resp = sources.http_get(url)
+        yield t, resp.status_code, resp.content
+
+
+def synthetic_fetcher(spec: SourceSpec, target: datetime) -> Iterator[Download]:
+    if spec.kind != "jsoc":
+        return
+    t = target.replace(minute=(target.minute // 15) * 15, second=0, microsecond=0)
+    size = 2048 if spec.size >= 2048 else 1024  # keep 4k synthetic renders cheap
+    yield t, 200, synthetic.render_jpeg(t, size)
+
+
+def default_fetcher() -> Fetcher:
+    return synthetic_fetcher if sources.synthetic_enabled() else http_fetcher
+
+
+@dataclass
+class Acquired:
+    spec: SourceSpec
+    time: datetime
+    frame: ValidFrame
+    failures: list[str] = field(default_factory=list)
+
+
+def acquire(target: datetime, chain: list[SourceSpec], fetch: Fetcher) -> tuple[Acquired | None, list[str]]:
+    """Walk the fallback chain; return the first frame that passes validation."""
+    failures: list[str] = []
+    for spec in chain:
+        name = f"{spec.name}:{spec.product}"
+        try:
+            got_any = False
+            for t, status, data in fetch(spec, target):
+                got_any = True
+                try:
+                    frame = validate(data, status, spec, t, target)
+                    return Acquired(spec, t, frame, failures), failures
+                except ValidationError as e:
+                    failures.append(f"{name} {t:%Y%m%d_%H%M}: {e}")
+            if not got_any:
+                failures.append(f"{name}: no frame within ±30 min")
+        except Exception as e:  # noqa: BLE001 - network errors mean "try next source"
+            failures.append(f"{name}: {e}")
+    return None, failures
+
+
+def frame_key(t: datetime, suffix: str = "") -> str:
+    return f"frames/{t:%Y/%m/%d/%H%M}{suffix}.webp"
+
+
+def store_frame(storage: Storage, acq: Acquired) -> dict:
+    p = process.crop_and_mask(acq.frame.rgb, acq.frame.disk)
+    key = frame_key(acq.time)
+    storage.put(key, process.encode(p.image, 1024), "image/webp", FRAME_CACHE)
+    storage.put(frame_key(acq.time, "_512"), process.encode(p.image, 512), "image/webp", FRAME_CACHE)
+    return {
+        "t": iso(acq.time),
+        "key": key,
+        "source": acq.spec.name,
+        "cx": round(p.cx, 5),
+        "cy": round(p.cy, 5),
+        "r": round(p.r, 5),
+        "b0": round(solar.b0_deg(acq.time), 3),
+    }
+
+
+def update_manifest(storage: Storage, entries: dict | list[dict] | None, now: datetime) -> dict:
+    m = get_json(storage, MANIFEST_KEY, {"frames": []})
+    frames = {f["key"]: f for f in m.get("frames", [])}
+    for e in [entries] if isinstance(entries, dict) else entries or []:
+        frames[e["key"]] = e
+    cutoff = now - timedelta(days=config.ROLLING_DAYS)
+    kept = sorted((f for f in frames.values() if parse_iso(f["t"]) >= cutoff), key=lambda f: f["t"])
+    latest = kept[-1] if kept else None
+    manifest = {
+        "generated_at": iso(now),
+        "latest": latest,
+        "fallback": bool(latest and latest["source"] == "sdo-1700"),
+        "frames": kept,
+    }
+    put_json(storage, MANIFEST_KEY, manifest, "max-age=300")
+    return manifest
+
+
+def prune(storage: Storage, now: datetime) -> list[str]:
+    """Delete hourly frames older than 31 days. Never touches daily/."""
+    cutoff = (now - timedelta(days=config.DELETE_AFTER_DAYS)).strftime("%Y/%m/%d")
+    removed = []
+    for key in storage.list("frames/"):
+        day = "/".join(key.split("/")[1:4])
+        if day < cutoff:
+            storage.delete(key)
+            removed.append(key)
+    return removed
+
+
+def append_log(storage: Storage, now: datetime, record: dict) -> None:
+    key = f"logs/ingest/{now:%Y-%m}.jsonl"
+    prev = storage.get(key) or b""
+    line = json.dumps(record, ensure_ascii=False).encode() + b"\n"
+    storage.put(key, prev + line, "application/x-ndjson")
+
+
+def run(
+    storage: Storage,
+    target: datetime,
+    now: datetime | None = None,
+    fetch: Fetcher | None = None,
+    chain: list[SourceSpec] | None = None,
+    write_manifest: bool = True,
+) -> dict | None:
+    now = now or utcnow()
+    acq, failures = acquire(target, chain or sources.HOURLY_CHAIN, fetch or default_fetcher())
+    entry = store_frame(storage, acq) if acq else None
+    if write_manifest:
+        update_manifest(storage, entry, now)
+        prune(storage, now)
+    append_log(
+        storage,
+        now,
+        {
+            "at": iso(now),
+            "target": iso(target),
+            "ok": entry is not None,
+            "source": entry["source"] if entry else None,
+            "frame": entry["t"] if entry else None,
+            "failures": failures,
+        },
+    )
+    return entry
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--target", help="ISO UTC time; default: last hour − 30 min")
+    args = ap.parse_args(argv)
+    now = utcnow()
+    target = parse_iso(args.target) if args.target else target_time(now)
+    entry = run(get_storage(), target, now)
+    if entry is None:
+        print(f"ingest: no valid frame for {iso(target)}", file=sys.stderr)
+        return 1
+    print(f"ingest: stored {entry['key']} from {entry['source']}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
