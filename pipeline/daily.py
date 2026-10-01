@@ -161,6 +161,25 @@ def _synthetic_noaa(now: datetime) -> dict:
     }
 
 
+# --- 3b. cycle.json ------------------------------------------------------------------
+
+def build_cycle(storage: Storage, now: datetime, errors: list[str]) -> dict | None:
+    """Cycles 24–25 observed vs. the NOAA prediction, for the cycle page.
+    On failure the previous cycle.json stays in place."""
+    if sources.synthetic_enabled():
+        return None  # no offline stand-in: the page says the data is not available
+    try:
+        cycle = noaa.collect_cycle(errors)
+    except Exception as e:  # noqa: BLE001
+        errors.append(f"cycle: {e}")
+        return None
+    if not cycle or not (cycle["observed"] or cycle["predicted"]):
+        return None
+    cycle["generated_at"] = ingest.iso(now)
+    put_json(storage, "cycle.json", cycle, "max-age=3600")
+    return cycle
+
+
 # --- 4. lab.json -----------------------------------------------------------------------
 
 def build_lab(storage: Storage, now: datetime) -> dict:
@@ -184,6 +203,9 @@ def run(storage: Storage, now: datetime, only: str | None = None, archive: bool 
         result["archive"] = archive_day(storage, (now - timedelta(days=1)).date())
     if only in (None, "timelapse"):
         result["timelapse"] = build_timelapse(storage)
+    if only in (None, "cycle"):
+        # before today.json, so its `errors` also records cycle failures
+        result["cycle"] = build_cycle(storage, now, errors)
     if only in (None, "today"):
         result["today"] = build_today(storage, now, result.get("timelapse"), errors)
     if only in (None, "lab"):
@@ -193,10 +215,10 @@ def run(storage: Storage, now: datetime, only: str | None = None, archive: bool 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--only", choices=["archive", "timelapse", "today", "lab"])
+    ap.add_argument("--only", choices=["archive", "timelapse", "cycle", "today", "lab"])
     args = ap.parse_args(argv)
     res = run(get_storage(), ingest.utcnow(), args.only)
-    print({k: (v if k != "today" and k != "lab" else "written") for k, v in res.items()})
+    print({k: (v if k not in ("today", "lab", "cycle") else ("written" if v else None)) for k, v in res.items()})
     return 0
 
 

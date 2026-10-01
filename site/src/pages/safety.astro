@@ -1,10 +1,192 @@
 ---
 import Base from "../layouts/Base.astro";
-import Upcoming from "../components/Upcoming.astro";
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+
+const RULES = [
+  {
+    title: "לא מסתכלים בשמש דרך משקפת, טלסקופ או עדשת מצלמה בלי פילטר מתאים",
+    text: "העדשות מרכזות את אור השמש לנקודה אחת, כמו זכוכית מגדלת שמבעירה נייר. אפילו מבט קצר עלול לפגוע ברשתית העין לתמיד. הפילטר היחיד שמתאים הוא פילטר סולארי ייעודי שמחובר היטב לחזית המכשיר, בצד שפונה אל השמש.",
+  },
+  {
+    title: "משקפי שמש אינם הגנה",
+    text: "גם משקפי השמש הכהים ביותר מעבירים הרבה יותר אור ממה שבטוח להסתכל בו ישירות בשמש. גם פילטר מאולתר, מכל חומר שהוא, אינו בטוח.",
+  },
+  {
+    title: "לא משתמשים בפילטר שמבריגים על העינית",
+    text: "במשקפות ובטלסקופים ישנים וזולים מצורף לפעמים פילטר קטן שמבריגים על העינית, ולפעמים כתוב עליו SUN. האור כבר מרוכז שם, החום עלול לסדוק את הפילטר בבת אחת, ואז כל האור נכנס לעין. זרקו אותו.",
+  },
+];
 ---
 
-<Base title="איך לצפות בשמש בבטחה">
-  <Upcoming title="איך לצפות בשמש בבטחה" milestone="M5">
-    <p>אסור להסתכל על השמש ישירות, ובמיוחד לא דרך משקפת או טלסקופ בלי פילטר סולארי תקני. בעמוד הזה יוסבר איך להקרין את השמש על דף לבן ולראות כתמים בלי סכנה.</p>
-  </Upcoming>
+<Base title="תצפית בטוחה" description="איך צופים בכתמי השמש בבטחה: שיטת ההקרנה של קסטלי עם משקפת על חצובה ודף לבן, פילטרים לפי ISO 12312-2, ומה אסור לעשות.">
+  <article class="wrap content-page">
+    <header class="page-head">
+      <h1>איך צופים בשמש בבטחה</h1>
+      <p class="lede">
+        את כתמי השמש אפשר לראות גם בלי לוויין: מספיקים משקפת, חצובה ודף לבן. אבל השמש היא הדבר המסוכן ביותר להסתכל עליו בשמיים, ולכן לפני
+        הכול, שלושה כללים.
+      </p>
+    </header>
+
+    <section class="rules" aria-labelledby="rules-title">
+      <h2 id="rules-title" class="rules-head">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 1.5 21h21L12 2.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><path d="M12 9v5.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path><circle cx="12" cy="17.6" r="1.3" fill="currentColor"></circle></svg>
+        אזהרה: אסור להסתכל ישירות בשמש
+      </h2>
+      <ol>
+        {
+          RULES.map((r) => (
+            <li>
+              <h3>{r.title}</h3>
+              <p>{r.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="block prose" aria-labelledby="projection-title">
+      <h2 id="projection-title">שיטת ההקרנה של קסטלי, עם משקפת</h2>
+      <p>
+        זו השיטה שבה צייר גלילאו את הכתמים ב-1612, ושאותה המציא תלמידו בנדטו קסטלי (ראו <a href={`${base}history/`}>היסטוריה</a>). המשקפת מקרינה
+        את תמונת השמש על דף, ואף אחד לא מסתכל דרכה.
+      </p>
+      <p class="banner-warn">
+        <strong>רק עם מבוגר שמכיר את השיטה ונשאר ליד המשקפת כל הזמן.</strong> משקפת שמכוונת לשמש היא מלכודת: מישהו עלול לגשת ולהציץ בה. לעולם
+        לא משאירים אותה לבד.
+      </p>
+
+      <h3>מה צריך</h3>
+      <ul>
+        <li>משקפת קטנה (למשל ‎8×30 או ‎10×42). משקפת יקרה במיוחד לא מתאימה: החום עלול לפגוע בה.</li>
+        <li>חצובה של מצלמה ומתאם שמחבר אליה את המשקפת.</li>
+        <li>דף לבן על לוח קשיח, וקרטון גדול עם חור בגודל של עדשת המשקפת, שיטיל צל על הדף.</li>
+        <li>עיפרון, ושעון כדי לרשום מתי ציירתם.</li>
+      </ul>
+
+      <h3>שלב אחר שלב</h3>
+      <ol class="steps">
+        <li><strong>מכסים עדשה אחת.</strong> שמים מכסה על אחת העדשות הקדמיות. כך תופיע על הדף תמונה אחת בלבד, ואחד מצדי המשקפת לא יתחמם.</li>
+        <li><strong>מחברים לחצובה.</strong> החצובה מחזיקה את המשקפת יציבה, והידיים נשארות פנויות לציור.</li>
+        <li><strong>משחילים את הקרטון</strong> על העדשה הפתוחה. הצל שלו יחשיך את הדף, והתמונה תהיה ברורה יותר.</li>
+        <li>
+          <strong>מכוונים לפי הצל, בלי להסתכל.</strong> מזיזים את המשקפת עד שהצל שלה על הקרקע נעשה קטן ועגול ככל האפשר. זה הסימן שהיא מכוונת בדיוק
+          לשמש.
+        </li>
+        <li>
+          <strong>מחזיקים את הדף</strong> כ-30 עד 50 סנטימטר מאחורי העינית, עד שמופיע עליו עיגול בהיר. מסובבים את גלגל המיקוד עד ששולי העיגול חדים.
+          ככל שהדף רחוק יותר, העיגול גדול יותר וחלש יותר.
+        </li>
+        <li><strong>מסמנים את הכתמים</strong> בעיפרון, ורושמים תאריך ושעה. אם תחזרו על זה כמה ימים, תוכלו לראות את הכתמים נעים, כמו גלילאו.</li>
+        <li>
+          <strong>עושים הפסקות.</strong> אחרי כמה דקות מסובבים את המשקפת הצידה מהשמש כדי שתתקרר. כשמסיימים, סוגרים את המכסים ומפנים אותה מהשמש לפני
+          שמפרקים.
+        </li>
+      </ol>
+      <p>
+        השמש זזה בשמיים כל הזמן, ולכן התמונה תזחל לאט אל מחוץ לדף. זה תקין: מכוונים מחדש לפי הצל. את מה שציירתם אפשר להשוות לתמונה של היום
+        <a href={base}>בעמוד הבית</a>.
+      </p>
+    </section>
+
+    <section class="block prose" aria-labelledby="filters-title">
+      <h2 id="filters-title">פילטרים סולאריים</h2>
+      <p>
+        <strong>משקפי ליקוי</strong> הם משקפיים מנייר או מפלסטיק עם פילטר כהה מאוד, שמיועדים להסתכל בשמש בעין, בלי שום מכשיר. משקפיים בטוחים עומדים
+        בתקן הבינלאומי <span class="num ltr">ISO 12312-2</span>. קונים אותם רק מספק מוכר, ובודקים לפני כל שימוש שאין בהם שריטות, חורים או קרעים.
+        דרכם רואים רק כתמים גדולים במיוחד, כי רוב הכתמים קטנים מדי לעין בלי הגדלה.
+      </p>
+      <p class="banner-danger">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M5 5l14 14" stroke="currentColor" stroke-width="2"></path></svg>
+        <span>אסור להסתכל דרך משקפת או טלסקופ כשמרכיבים משקפי ליקוי. האור המרוכז שורף את הפילטר של המשקפיים ונכנס לעין.</span>
+      </p>
+      <p>
+        <strong>לטלסקופ או למשקפת</strong> צריך פילטר סולארי ייעודי שנבנה לאותו מכשיר ומכסה את כל הפתח הקדמי. הוא חייב להיות מחובר היטב, כך שלא
+        ייפול או יזוז ברוח. זה ציוד לחובבי אסטרונומיה מנוסים, והכי טוב להשתמש בו במצפה או במפגש של אגודה לאסטרונומיה.
+      </p>
+    </section>
+
+    <section class="block prose" aria-labelledby="myth-title">
+      <h2 id="myth-title">האם גלילאו התעוור מהשמש?</h2>
+      <p>
+        לא. זה סיפור נפוץ, אבל הוא לא מתאים לתאריכים. גלילאו צפה בכתמים ב-1612 ו-1613, והראייה שלו התחילה להידרדר רק ב-1637, כ-25 שנה אחר כך. בתוך
+        כשנה הוא איבד את הראייה בשתי העיניים.
+      </p>
+      <p>
+        אף אחד לא בדק את עיניו בשיטות של היום, ולכן הסיבה המדויקת לא ידועה. ההשערה המקובלת היא דלקת ממושכת בתוך העין (<strong>דלקת ענבייה</strong>,
+        uveitis), שגרמה ללחץ גבוה בעין ולנזק לעצב הראייה (<strong>גלאוקומה משנית</strong>). רופאי עיניים שחקרו את המקרה הציעו גם אפשרויות אחרות,
+        אבל אף אחת מהן איננה נזק מהשמש. וגלילאו עצמו כתב שבזכות שיטת ההקרנה אפשר לראות את הכתמים בלי לפגוע בעיניים.
+      </p>
+    </section>
+  </article>
 </Base>
+
+<style>
+  .rules {
+    margin-top: 1.5rem;
+    background: var(--danger-bg);
+    color: var(--text);
+    border: 1px solid var(--danger);
+    border-inline-start-width: 6px;
+    border-radius: var(--radius);
+    padding: clamp(1rem, 3vw, 1.5rem);
+    max-width: 72ch;
+  }
+  .rules-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--danger);
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+  }
+  .icon {
+    width: 1.6em;
+    height: 1.6em;
+    flex: none;
+  }
+  .rules ol {
+    margin: 0.75rem 0 0;
+    padding-inline-start: 1.4rem;
+    display: grid;
+    gap: 0.9rem;
+  }
+  .rules li::marker {
+    font-family: var(--font-head);
+    font-weight: 700;
+    color: var(--danger);
+  }
+  .rules h3 {
+    margin-bottom: 0.25rem;
+  }
+  .rules p {
+    margin: 0;
+  }
+
+  .banner-danger {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    background: var(--danger-bg);
+    border-inline-start: 4px solid var(--danger);
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+  }
+  .banner-danger .icon {
+    color: var(--danger);
+    width: 1.4em;
+    height: 1.4em;
+    margin-top: 0.1em;
+  }
+
+  .steps {
+    padding-inline-start: 1.4rem;
+    display: grid;
+    gap: 0.55rem;
+  }
+  .prose h3 {
+    margin-top: 1.25rem;
+  }
+  .prose ul {
+    padding-inline-start: 1.2rem;
+  }
+</style>
