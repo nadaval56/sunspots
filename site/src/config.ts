@@ -1,5 +1,5 @@
-// Site-wide settings. Name and domain wait on a human decision (BRIEF §9).
-export const SITE_NAME = "יומן שמש";
+// Site-wide settings. The name was chosen by the owner (docs/DECISIONS.md #17); the domain is still open.
+export const SITE_NAME = "השמש היום";
 export const SITE_TAGLINE = "כתמי השמש, יום אחר יום";
 
 /** Where today.json, manifest.json, frames and the timelapse live.
@@ -8,7 +8,7 @@ export const SITE_TAGLINE = "כתמי השמש, יום אחר יום";
 export const MEDIA_BASE = (import.meta.env.PUBLIC_MEDIA_BASE ?? "/media").replace(/\/$/, "");
 
 export const NAV = [
-  { href: "", label: "השמש היום" },
+  { href: "", label: "התמונה של היום" },
   { href: "lab/", label: "מעבדת הסיבוב" },
   { href: "history/", label: "היסטוריה" },
   { href: "cycle/", label: "מחזור השמש" },

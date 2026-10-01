@@ -1,0 +1,22 @@
+# Manual check that the R2 bucket, token, public URL and CORS are set up
+# correctly (docs/R2_SETUP.md, step 8). Writes and deletes one tiny object.
+name: r2-check
+on:
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ vars.R2_BUCKET || 'sunspots-media' }}
+      PUBLIC_MEDIA_BASE: ${{ vars.PUBLIC_MEDIA_BASE }}
+      SITE_ORIGIN: ${{ vars.SITE_URL || format('https://{0}.github.io', github.repository_owner) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python scripts/check_r2.py | tee -a "$GITHUB_STEP_SUMMARY"
