@@ -1,10 +1,5 @@
 ---
-import "@fontsource/frank-ruhl-libre/hebrew-700.css";
-import "@fontsource/frank-ruhl-libre/latin-700.css";
-import "@fontsource/assistant/hebrew-400.css";
-import "@fontsource/assistant/hebrew-600.css";
-import "@fontsource/assistant/latin-400.css";
-import "@fontsource/assistant/latin-600.css";
+import "@fontsource-variable/heebo/index.css";
 import "@fontsource/ibm-plex-mono/latin-400.css";
 import "../styles/global.css";
 import { NAV, SITE_NAME, SITE_TAGLINE, CREDIT_SDO, CREDIT_NOAA } from "../config";
@@ -26,8 +21,8 @@ const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#eef1f4" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#0c1117" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f4f2ec" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1c1b19" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
   </head>

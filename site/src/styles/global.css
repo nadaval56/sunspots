@@ -1,24 +1,29 @@
-/* "Observation journal" (BRIEF §7.2): a dark photographic plate beside a clean
-   measurement notebook. Cool blue-grey palette, ink-blue accent, small radii. */
+/* Visual language shared with the owner's hebcal app (DECISIONS #28): one
+   Hebrew sans (Heebo) with hierarchy from weight, warm paper neutrals,
+   terracotta accent, soft 16px cards and pill buttons. The photographic
+   plate stays dark in both themes, and the measurement tracks keep their
+   high-contrast cyan/lime. Contrast values are against --surface. */
 
 :root {
   color-scheme: light dark;
 
-  --font-head: "Frank Ruhl Libre", "Times New Roman", serif;
-  --font-body: "Assistant", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-head: "Heebo Variable", "Heebo", system-ui, sans-serif;
+  --font-body: "Heebo Variable", "Heebo", system-ui, sans-serif;
+  --font-num: "Heebo Variable", "Heebo", system-ui, sans-serif; /* with tabular figures */
+  --font-mono: ui-monospace, "SFMono-Regular", Consolas, monospace; /* formulas only */
 
-  --bg: #eef1f4;
+  --bg: #f4f2ec;
   --surface: #ffffff;
-  --surface-2: #f6f8fa;
-  --text: #17202b;
-  --muted: #4f5b69; /* 7.0:1 on --surface */
-  --border: #d3dae2;
-  --rule: #e3e8ee;
-  --accent: #0b5ea3; /* ink blue, 6.6:1 on --surface */
-  --accent-soft: #e2edf7;
-  --focus: #0b72c4;
-  --warn-bg: #fff4d6;
+  --surface-2: #faf9f5;
+  --text: #1f1e1d;
+  --muted: #6e6c66; /* 5.3:1 */
+  --border: #e6e3d9;
+  --rule: #efece3;
+  --accent: #a8502f; /* terracotta for text and links, 5.5:1 */
+  --accent-fill: #c96442; /* terracotta for fills, as in hebcal */
+  --accent-soft: #faede7;
+  --focus: #c96442;
+  --warn-bg: #fdf3dc;
   --warn-text: #5c4300;
   --danger: #a3261a;
 
@@ -26,28 +31,30 @@
   --chart-2: #2f8a3c;
 
   /* the plate stays dark in both themes */
-  --plate: #05070a;
-  --plate-text: #c9d3de;
+  --plate: #0b0a09;
+  --plate-text: #d9d5cc;
   --track-1: #38d6ff;
   --track-2: #7dff6a;
 
-  --radius: 2px;
+  --radius: 16px;
+  --radius-sm: 11px;
   --gutter: clamp(16px, 4vw, 40px);
   --maxw: 1180px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0c1117;
-    --surface: #131a22;
-    --surface-2: #18212b;
-    --text: #e2e8ef;
-    --muted: #a3afbc;
-    --border: #2a3542;
-    --rule: #202a35;
-    --accent: #6fb0ec;
-    --accent-soft: #16283a;
-    --focus: #6fb0ec;
+    --bg: #1c1b19;
+    --surface: #232220;
+    --surface-2: #2b2926;
+    --text: #f5f3ee;
+    --muted: #a8a59d; /* 6.5:1 */
+    --border: #34322d;
+    --rule: #2a2825;
+    --accent: #e08a6b; /* 6.1:1 */
+    --accent-fill: #e08a6b;
+    --accent-soft: #33241e;
+    --focus: #e08a6b;
     --warn-bg: #3a2e0a;
     --warn-text: #f5dc94;
     --danger: #ff8a7a;
@@ -74,6 +81,7 @@ body {
   font-size: 1.0625rem;
   line-height: 1.6;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1,
@@ -82,6 +90,7 @@ h3 {
   font-family: var(--font-head);
   font-weight: 700;
   line-height: 1.2;
+  letter-spacing: -0.02em;
   margin: 0 0 0.5em;
 }
 h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); }
@@ -107,10 +116,13 @@ svg {
 }
 
 .num,
-time,
+time {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+}
 code {
   font-family: var(--font-mono);
-  font-feature-settings: "tnum";
+  font-size: 0.9em;
 }
 
 /* numbers, times and coordinates read left-to-right inside RTL text */
@@ -152,8 +164,9 @@ button,
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.4em 0.9em;
+  border-radius: 999px;
+  padding: 0.4em 1em;
+  font-weight: 500;
   cursor: pointer;
   min-height: 40px;
 }
@@ -202,7 +215,7 @@ button[aria-pressed="true"] {
 .region-marker .ring { fill: none; stroke: var(--track-1); stroke-width: 3; }
 .region-label {
   fill: #fff;
-  font-family: var(--font-mono);
+  font-family: var(--font-num);
   font-size: 26px;
   text-anchor: middle;
   paint-order: stroke;
@@ -233,19 +246,19 @@ button[aria-pressed="true"] {
   gap: 0.6rem;
 }
 .bar-key { font-weight: 600; text-align: center; }
-.bar-track { display: block; block-size: 12px; background: var(--rule); border-radius: var(--radius); }
+.bar-track { display: block; block-size: 12px; background: var(--rule); border-radius: 999px; }
 .bar-fill {
   display: block;
   block-size: 100%;
-  background: var(--chart-1);
-  border-radius: var(--radius);
+  background: var(--accent-fill);
+  border-radius: 999px;
 }
 .bar-val { text-align: end; direction: ltr; }
 
 .xray-svg { display: block; width: 100%; height: auto; direction: ltr; touch-action: pan-y; }
 .xray-svg .grid { stroke: var(--rule); stroke-width: 1; }
-.xray-svg .axis-label { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; text-anchor: end; }
-.xray-svg .time-label { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+.xray-svg .axis-label { fill: var(--muted); font-family: var(--font-num); font-size: 11px; text-anchor: end; }
+.xray-svg .time-label { fill: var(--muted); font-family: var(--font-num); font-size: 11px; }
 .xray-svg .xray-line { fill: none; stroke: var(--chart-1); stroke-width: 2; stroke-linejoin: round; }
 .xray-svg .crosshair { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
 .xray-svg .xray-dot { fill: var(--chart-1); stroke: var(--surface); stroke-width: 2; }
