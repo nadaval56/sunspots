@@ -218,6 +218,10 @@ button[aria-pressed="true"] {
 
 #overlay { pointer-events: none; overflow: visible; }
 #overlay.interactive .earth { pointer-events: auto; }
+/* touch-action is read from the nearest box, the <svg>, not from shapes inside
+   it. Without this a phone starts scrolling the page and cancels the drag. The
+   overlay has pointer-events: none, so touches elsewhere still reach the photo. */
+#overlay.interactive { touch-action: none; }
 
 .region-marker .ring-halo { fill: none; stroke: rgba(0, 0, 0, 0.75); stroke-width: 7; }
 .region-marker .ring { fill: none; stroke: var(--track-1); stroke-width: 3; }
@@ -231,9 +235,8 @@ button[aria-pressed="true"] {
   stroke-width: 5px;
 }
 
-.earth { cursor: grab; touch-action: none; outline: none; }
+.earth { cursor: grab; outline: none; will-change: transform; }
 .earth.dragging { cursor: grabbing; }
-.earth-ring { fill: none; stroke: #bfe1ff; stroke-width: 2; stroke-dasharray: 4 4; opacity: 0.85; }
 .earth:focus-visible .earth-body { stroke: #fff; stroke-width: 3; }
 .earth-hit { fill: transparent; }
 .earth-body { fill: #2f7fe0; stroke: #bfe1ff; stroke-width: 1.5; }

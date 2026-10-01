@@ -139,9 +139,8 @@ function setupEarth(svg: SVGSVGElement, layer: SVGGElement, frame: FrameEntry) {
   // Drawn at the origin and moved with a transform: one attribute per frame, no layout work.
   const g = svgEl("g", { class: "earth", tabindex: 0, role: "img", "aria-label": "כדור הארץ בקנה מידה. אפשר להזיז בחיצים." }, layer);
   svgEl("circle", { r: 70, class: "earth-hit" }, g); // generous grab area (~4% of the image)
-  svgEl("circle", { r: Math.max(r * 5, 14), class: "earth-ring" }, g); // shows where the tiny Earth is
   svgEl("circle", { r, class: "earth-body" }, g);
-  const label = svgEl("text", { x: 0, y: Math.max(r * 5, 14) + 30, class: "earth-label" }, g);
+  const label = svgEl("text", { x: 0, y: r + 30, class: "earth-label" }, g);
   label.textContent = "כדור הארץ";
 
   const clamp = (v: number) => Math.min(1000, Math.max(0, v));
@@ -151,22 +150,16 @@ function setupEarth(svg: SVGSVGElement, layer: SVGGElement, frame: FrameEntry) {
   let ctm: DOMMatrix | null = null;
   const toViewbox = (e: PointerEvent) => new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm!);
   let grab: { dx: number; dy: number } | null = null;
-  let raf = 0;
-  let last: PointerEvent | null = null;
 
+  // Move straight away: the browser already delivers pointermove once per frame,
+  // and waiting for requestAnimationFrame only added a frame of lag.
   const move = (e: PointerEvent) => {
     if (!grab) return;
     e.preventDefault();
-    last = e;
-    if (raf) return; // at most one update per frame
-    raf = requestAnimationFrame(() => {
-      raf = 0;
-      if (!grab || !last) return;
-      const p = toViewbox(last);
-      pos.x = clamp(p.x - grab.dx);
-      pos.y = clamp(p.y - grab.dy);
-      place();
-    });
+    const p = toViewbox(e);
+    pos.x = clamp(p.x - grab.dx);
+    pos.y = clamp(p.y - grab.dy);
+    place();
   };
   const end = () => {
     grab = null;
