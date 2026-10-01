@@ -323,7 +323,7 @@ v_spot ≈ 2π·695,700 km / 25.4 d ≈ 2.0 km/s</pre>
     }
   }
   .lab .plate .hint {
-    color: #b8b3a8;
+    color: var(--plate-muted);
     margin: 0;
   }
   .platebar {
@@ -364,14 +364,14 @@ v_spot ≈ 2π·695,700 km / 25.4 d ≈ 2.0 km/s</pre>
   .lab .plate .chip {
     background: transparent;
     color: var(--plate-text);
-    border-color: #3d3a35;
+    border-color: var(--plate-line);
   }
   .lab .plate button:hover {
-    border-color: #e08a6b;
+    border-color: var(--plate-accent);
   }
   .lab .plate button[aria-pressed="true"],
   .lab .plate .day[aria-current="true"] {
-    background: #3a2a22;
+    background: var(--plate-active);
     border-color: var(--track-1);
     color: #fff;
   }
@@ -380,7 +380,7 @@ v_spot ≈ 2π·695,700 km / 25.4 d ≈ 2.0 km/s</pre>
     cursor: not-allowed;
   }
   .lab .plate :focus-visible {
-    outline-color: #e08a6b;
+    outline-color: var(--plate-accent);
   }
   .chips,
   .plate-tools {
@@ -425,8 +425,8 @@ v_spot ≈ 2π·695,700 km / 25.4 d ≈ 2.0 km/s</pre>
     display: grid;
     justify-items: center;
     gap: 2px;
-    color: #c2bdb2;
-    border-color: #34322d;
+    color: var(--plate-muted-2);
+    border-color: var(--plate-line-2);
   }
   .day .dots {
     display: flex;
@@ -560,12 +560,12 @@ v_spot ≈ 2π·695,700 km / 25.4 d ≈ 2.0 km/s</pre>
   }
   .lab-chart text {
     font-family: var(--font-num);
-    font-size: 12px;
+    font-size: 12px; /* a11y-allow-px: SVG user units in the fixed 440×250 viewBox */
     fill: var(--muted);
   }
   .lab-chart .ttl {
     font-family: var(--font-body);
-    font-size: 13px;
+    font-size: 13px; /* a11y-allow-px: SVG user units in the fixed 440×250 viewBox */
   }
   .lab-chart .grid {
     stroke: var(--rule);
@@ -588,7 +588,7 @@ v_spot ≈ 2π·695,700 km / 25.4 d ≈ 2.0 km/s</pre>
   }
   .lab-chart .empty-msg {
     font-family: var(--font-body);
-    font-size: 14px;
+    font-size: 14px; /* a11y-allow-px: SVG user units in the fixed 440×250 viewBox */
     text-anchor: middle;
   }
   .legend {
