@@ -86,6 +86,14 @@ def test_synthetic_backfill_builds_valid_timelapse(store, monkeypatch):
     assert [f["date"] for f in lab["frames"]] == ["2026-09-24", "2026-09-25", "2026-09-26"]
     assert all(abs(f["cx"] - 0.5) < 0.01 for f in lab["frames"])
 
+    # a frame file that never made it into the manifest is fetched again
+    m = json.loads((store.root / "manifest.json").read_text())
+    orphan = m["frames"].pop(0)
+    (store.root / "manifest.json").write_text(json.dumps(m))
+    again = backfill.run(store, NOW, days=2, archive_days=0, step_hours=4, timelapse=False, fetch=ingest.synthetic_fetcher)
+    assert again["stored"] == 1 and again["skipped"] == 12
+    assert orphan["key"] in [f["key"] for f in json.loads((store.root / "manifest.json").read_text())["frames"]]
+
     # rerun is idempotent: nothing new to fetch
     again = backfill.run(store, NOW, days=2, archive_days=0, step_hours=4, timelapse=False, fetch=ingest.synthetic_fetcher)
     assert again["stored"] == 0 and again["skipped"] == 13

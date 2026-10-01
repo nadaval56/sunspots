@@ -37,13 +37,18 @@ jobs:
       - run: python -m pipeline.daily
 
   # Public repos lose scheduled workflows after 60 idle days. Media lives in R2,
-  # so there are no commits; keepalive re-enables via the API (no empty commits).
+  # so there are no commits; re-enabling the workflows through the API resets
+  # the inactivity timer (no empty commits). This replaces
+  # gautamkrishnar/keepalive-workflow, which GitHub now blocks.
   keepalive:
     runs-on: ubuntu-latest
     permissions:
       actions: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: gautamkrishnar/keepalive-workflow@v2
-        with:
-          use_api: true
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for wf in ingest.yml daily.yml; do
+            gh api -X PUT "repos/${{ github.repository }}/actions/workflows/$wf/enable"
+            echo "re-enabled $wf"
+          done
