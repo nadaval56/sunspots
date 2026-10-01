@@ -1,0 +1,150 @@
+/* ── עיצוב שני המסמכים: מדיניות הפרטיות והצהרת הנגישות ─────────────────────
+ *
+ * הועתק מ-geniza-explorer והותאם לטוקנים של global.css. נטען רק בשני הדפים
+ * האלה (Base.astro, prop בשם extraStyles), אחרי global.css. כל הצבעים מגיעים
+ * מהטוקנים, כך שהמסמכים מתחלפים יחד עם מצב כהה ועם מצבי התצוגה של תפריט
+ * הנגישות בלי כלל נפרד לכל מצב.
+ *
+ * כל המידות ב-rem, כדי שפקד גודל הטקסט יעבוד גם כאן.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+.wrap.legal-article {
+  max-width: calc(48rem + 2 * var(--gutter, 16px));
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+  /* מזהה ארוך, שם מפתח או כתובת יכולים לגלוש ב-360px עם טקסט מוגדל.
+     break-word נכנס לפעולה רק כשמילה בודדת רחבה מהשורה. */
+  overflow-wrap: break-word;
+}
+
+.legal-article .lede {
+  font-size: 1.1rem;
+  line-height: 1.75;
+  color: var(--muted);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.legal-sec { margin-bottom: 2.25rem; }
+.legal-sec h2 { margin-bottom: 0.75rem; }
+.legal-sec h3 { margin: 1.4rem 0 0.5rem; font-size: 1.05rem; }
+.legal-sec p { line-height: 1.8; margin-bottom: 0.9rem; }
+.legal-sec p:last-child { margin-bottom: 0; }
+.legal-sec ul { margin: 0.5rem 0 0.9rem; padding-inline-start: 1.4rem; }
+.legal-sec li { line-height: 1.75; margin-bottom: 0.4rem; }
+
+/* שמות מארחים ומפתחות אחסון הם מילים ארוכות בלי רווח. inline עם
+   overflow-wrap: anywhere שובר אותן באמצע, ולא פותח גלילה אופקית. */
+.legal-article .mono,
+.legal-sec code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.05em 0.35em;
+  direction: ltr;
+  unicode-bidi: isolate;
+  overflow-wrap: anywhere;
+}
+
+/* ── טבלאות ──────────────────────────────────────────────────────────────
+ * העטיפה גוללת לרוחב בפני עצמה, כדי שטבלה רחבה לא תגרום לגלילה אופקית
+ * של כל הדף (1.4.10). tabindex ו-role בדף עצמו הופכים אותה לנגישה במקלדת. */
+.tbl-scroll {
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.legal-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.legal-tbl caption {
+  text-align: start;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.legal-tbl th,
+.legal-tbl td {
+  text-align: start;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--rule);
+  line-height: 1.65;
+  vertical-align: top;
+}
+.legal-tbl th { font-weight: 600; background: var(--surface-2); }
+.legal-tbl tbody tr:last-child td { border-bottom: 0; }
+
+/* ── פקדי הנתונים ─────────────────────────────────────────────────────── */
+.datactl {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem;
+  margin-top: 1rem;
+}
+.datactl .st { line-height: 1.75; margin-bottom: 0.9rem; }
+.datactl .btn-row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.datactl button { min-height: 44px; }
+.datactl #dv-wipe { border-color: var(--danger); color: var(--danger); }
+.datactl #dv-out { margin-top: 0.9rem; }
+.datactl .dv-msg { color: var(--muted); margin-bottom: 0.5rem; }
+.datactl pre {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  direction: ltr;
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* ── קופסאות משנה ─────────────────────────────────────────────────────── */
+.legal-note {
+  background: var(--surface-2);
+  border-inline-start: 3px solid var(--accent-fill);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.1rem;
+  line-height: 1.75;
+  margin: 1.2rem 0;
+}
+.contact {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.2rem;
+  margin: 1.2rem 0;
+}
+.contact p { margin-bottom: 0.4rem; }
+.contact p:last-child { margin-bottom: 0; }
+.placeholder {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  padding: 0 0.3em;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.siblings { margin-top: 2.5rem; border-top: 1px solid var(--rule); padding-top: 1.5rem; }
+.siblings ul { list-style: none; margin: 0; padding: 0; }
+.siblings li { margin-bottom: 0.6rem; }
+.siblings li a { font-weight: 600; }
+.siblings li span { display: block; font-size: 0.9rem; color: var(--muted); }
+
+.updated { margin-top: 2rem; font-size: 0.9rem; color: var(--muted); }
+@media (min-width: 640px) {
+  .legal-tbl code { white-space: nowrap; }
+}

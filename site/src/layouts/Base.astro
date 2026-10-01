@@ -7,11 +7,21 @@ import { NAV, SITE_NAME, SITE_TAGLINE, CREDIT_SDO, CREDIT_NOAA } from "../config
 interface Props {
   title?: string;
   description?: string;
+  /** Extra stylesheets from public/, relative to the base path (e.g. "assets/legal.css"). */
+  extraStyles?: string[];
 }
-const { title, description = `${SITE_NAME}: ${SITE_TAGLINE}. תמונת השמש מתעדכנת כל שעה, ומעבדה למדידת סיבוב השמש.` } = Astro.props;
+const { title, extraStyles = [], description = `${SITE_NAME}: ${SITE_TAGLINE}. תמונת השמש מתעדכנת כל שעה, ומעבדה למדידת סיבוב השמש.` } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 const here = Astro.url.pathname.replace(/\/?$/, "/");
 const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
+
+// Accessibility menu + privacy notice (docs/A11Y_PRIVACY.md). Served as-is from public/assets/.
+// Keys carry a "sunspots:" prefix: on GitHub Pages every project site of the same user shares
+// one origin, and privacy.js purges by prefix.
+const A11Y_KEY = "sunspots:a11y:v1";
+const PRIVACY_KEY = "sunspots:privacy:v1";
+const privacyConfig = { key: PRIVACY_KEY, appPrefixes: ["sunspots:"], privacyUrl: `${base}privacy/` };
+const a11yConfig = { key: A11Y_KEY, privacyUrl: `${base}privacy/`, accessibilityUrl: `${base}accessibility/` };
 ---
 
 <!doctype html>
@@ -25,6 +35,25 @@ const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
     <meta name="theme-color" content="#1c1b19" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    {extraStyles.map((href) => <link rel="stylesheet" href={base + href} />)}
+    <link rel="stylesheet" href={`${base}assets/a11y.css`} />
+    {/* Pre-paint restore of the visitor's display settings. Reads the privacy decision first:
+        whoever declined local storage gets nothing read back. */}
+    <script is:inline define:vars={{ A11Y_KEY, PRIVACY_KEY }}>
+      try {
+        var _p = localStorage.getItem(PRIVACY_KEY);
+        if (!_p || JSON.parse(_p).local !== false) {
+          var _r = document.documentElement, _a = localStorage.getItem(A11Y_KEY);
+          if (_a) {
+            _a = JSON.parse(_a);
+            if (_a.fs) _r.setAttribute('data-fs', _a.fs);
+            if (_a.mode) _r.classList.add('a11y-' + _a.mode);
+            ['links', 'readable', 'spacing', 'still', 'cursor', 'focus']
+              .forEach(function (k) { if (_a[k]) _r.classList.add('a11y-' + k); });
+          }
+        }
+      } catch (e) { /* private mode or blocked storage: the page loads as usual */ }
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main">דילוג לתוכן</a>
@@ -72,8 +101,19 @@ const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
           <li>נתונים: <span lang="en" dir="ltr">{CREDIT_NOAA}</span></li>
           <li><a href={`${base}about/`}>מקורות ורישוי</a></li>
         </ul>
+        <p class="legal-links">
+          <a href={`${base}privacy/`}>מדיניות פרטיות</a> · <a href={`${base}accessibility/`}>הצהרת נגישות</a>
+        </p>
       </div>
     </footer>
+
+    {/* privacy.js always before a11y.js: a11y.js asks PRIVACY whether it may write. */}
+    <script is:inline define:vars={{ privacyConfig, a11yConfig }}>
+      window.PRIVACY_CONFIG = privacyConfig;
+      window.A11Y_CONFIG = a11yConfig;
+    </script>
+    <script is:inline src={`${base}assets/privacy.js`}></script>
+    <script is:inline src={`${base}assets/a11y.js`}></script>
   </body>
 </html>
 
@@ -146,9 +186,12 @@ const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
     display: grid;
     gap: 0.25rem;
   }
+  .legal-links {
+    margin: 0.75rem 0 0;
+  }
   .site-footer {
     margin-top: 4rem;
-    padding-block: 1.5rem;
+    padding-block: 1.5rem 5.5rem; /* room for the fixed accessibility button */
     border-top: 1px solid var(--border);
     color: var(--muted);
     font-size: 0.9rem;
