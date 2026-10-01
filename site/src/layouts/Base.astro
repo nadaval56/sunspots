@@ -9,11 +9,27 @@ interface Props {
   description?: string;
   /** Extra stylesheets from public/, relative to the base path (e.g. "assets/legal.css"). */
   extraStyles?: string[];
+  /** Keep the page out of search results (the 404 page). */
+  noindex?: boolean;
 }
-const { title, extraStyles = [], description = `${SITE_NAME}: ${SITE_TAGLINE}. תמונת השמש מתעדכנת כל שעה, ומעבדה למדידת סיבוב השמש.` } = Astro.props;
+const { title, extraStyles = [], noindex = false, description = `${SITE_NAME}: ${SITE_TAGLINE}. תמונת השמש מתעדכנת כל שעה, ומעבדה למדידת סיבוב השמש.` } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 const here = Astro.url.pathname.replace(/\/?$/, "/");
 const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
+
+// Link previews (WhatsApp, Facebook, X) and search results. One 1200×630 image per
+// section, built by scripts/og/build.mjs; every other page gets the default card.
+const OG_IMAGES: Record<string, { file: string; alt: string }> = {
+  "": { file: "home", alt: "תמונה של השמש באור נראה, עם כתמי שמש כהים" },
+  "lab/": { file: "lab", alt: "השמש עם מסלול של כתם שנע לאורך חמישה ימים" },
+  "history/": { file: "history", alt: "ציור של גלילאו מ-1612 לצד תמונה של SDO מ-2026" },
+  "cycle/": { file: "cycle", alt: "גרף של מספר כתמי השמש מ-2009, עם התחזית לשנים הבאות" },
+  "safety/": { file: "safety", alt: "תמונת השמש מוקרנת על דף לבן" },
+};
+const section = here.slice(base.length);
+const og = OG_IMAGES[section] ?? { file: "default", alt: "השמש באור נראה, עם כתמי שמש" };
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL(`${base}og/${og.file}.jpg`, Astro.site).href;
 
 // Accessibility menu + privacy notice (docs/A11Y_PRIVACY.md). Served as-is from public/assets/.
 // Keys carry a "sunspots:" prefix: on GitHub Pages every project site of the same user shares
@@ -34,7 +50,35 @@ const a11yConfig = { key: A11Y_KEY, privacyUrl: `${base}privacy/`, accessibility
     <meta name="theme-color" content="#f4f2ec" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#1c1b19" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
-    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+    <link rel="canonical" href={pageUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content="he_IL" />
+    <meta property="og:title" content={title ? fullTitle : `${SITE_NAME}: ${SITE_TAGLINE}`} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={og.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {noindex && <meta name="robots" content="noindex" />}
+    {
+      section === "" && (
+        <script
+          type="application/ld+json"
+          set:html={JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: SITE_NAME,
+            alternateName: SITE_TAGLINE,
+            url: pageUrl,
+            inLanguage: "he",
+          })}
+        />
+      )
+    }
     {extraStyles.map((href) => <link rel="stylesheet" href={base + href} />)}
     <link rel="stylesheet" href={`${base}assets/a11y.css`} />
     {/* Pre-paint restore of the visitor's display settings. Reads the privacy decision first:
