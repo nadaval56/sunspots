@@ -24,12 +24,12 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
     </header>
 
     <section class="source panel" aria-labelledby="source-title">
-      <h2 id="source-title" class="visually-hidden">מקור התמונות</h2>
+      <h2 id="source-title" class="source-title">מאיפה התמונות?</h2>
       <div class="source-row">
         <div class="seg" role="group" aria-label="מקור התמונות">
-          <button type="button" data-mode="archive" aria-pressed="true">ארכיון דוגמה</button>
-          <button type="button" data-mode="week" aria-pressed="false">השבוע האחרון</button>
-          <button type="button" data-mode="range" aria-pressed="false">בחירת תאריכים</button>
+          <button type="button" data-mode="archive" aria-pressed="true" aria-label="ארכיון דוגמה"><span class="long">ארכיון דוגמה</span><span class="short" aria-hidden="true">דוגמה</span></button>
+          <button type="button" data-mode="week" aria-pressed="false" aria-label="השבוע האחרון"><span class="long">השבוע האחרון</span><span class="short" aria-hidden="true">השבוע</span></button>
+          <button type="button" data-mode="range" aria-pressed="false" aria-label="בחירת תאריכים"><span class="long">בחירת תאריכים</span><span class="short" aria-hidden="true">לפי תאריך</span></button>
         </div>
         <label class="range-pick" id="range-pick" hidden>
           14 ימים החל מ-
@@ -254,18 +254,60 @@ v_spot ≈ 2π·695,700 km / 25.4 d ≈ 2.0 km/s</pre>
     padding: 0.75rem 1rem;
     margin-bottom: 1.25rem;
   }
+  .source-title {
+    margin: 0 0 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
   .source-row {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.75rem 1.25rem;
   }
+  /* One track with three equal segments; the chosen one is lifted out of it. */
   .seg {
-    display: inline-flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.25rem;
+    padding: 0.25rem;
+    flex: 1 1 26rem;
+    max-width: 34rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
   }
   .seg button {
-    margin-inline-end: -1px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    padding: 0.45em 0.6em;
+    min-height: 2.5rem;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+  .seg button:hover {
+    color: var(--text);
+    border-color: transparent;
+  }
+  .seg button[aria-pressed="true"] {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--accent);
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  }
+  .seg .short {
+    display: none;
+  }
+  @media (max-width: 420px) {
+    .seg .long {
+      display: none;
+    }
+    .seg .short {
+      display: inline;
+    }
   }
   .range-pick {
     display: inline-flex;
