@@ -73,26 +73,35 @@ function setupChannels(channels: Channels | null, frame: FrameEntry) {
       "פני השמש (הפוטוספרה) באור נראה, בצבע מלאכותי. כתמי השמש כהים כי הם קרים יותר מהסביבה שלהם.",
   };
   const all = [visible, ...list];
-  const host = $("#channels");
+  const name = $("#ch-name");
+  const pos = $("#ch-pos");
   const note = $("#channel-note");
-  all.forEach((c, i) => {
-    const label = document.createElement("label");
-    const input = document.createElement("input");
-    input.type = "radio";
-    input.name = "channel";
-    input.value = c.id;
-    input.checked = i === 0;
-    label.append(input, document.createTextNode(c.label));
-    host.append(label);
-    input.addEventListener("change", () => {
-      if (!input.checked) return;
-      const t = new Date(c.t);
-      // same file name every hour, so bust the 5-minute cache with the capture time
-      const src = c.id === "continuum" ? `${MEDIA_BASE}/${c.key}` : `${MEDIA_BASE}/${c.key}?t=${encodeURIComponent(c.t)}`;
-      showFrame(src, t, c.t, `תמונת השמש: ${c.label}, ${formatLocalTime(t)}`);
-      note.textContent = c.note;
-    });
+  const srcOf = (c: ChannelEntry) =>
+    // same file name every hour, so bust the 5-minute cache with the capture time
+    c.id === "continuum" ? `${MEDIA_BASE}/${c.key}` : `${MEDIA_BASE}/${c.key}?t=${encodeURIComponent(c.t)}`;
+  let i = 0;
+  const show = (k: number) => {
+    i = (k + all.length) % all.length;
+    const c = all[i];
+    const t = new Date(c.t);
+    showFrame(srcOf(c), t, c.t, `תמונת השמש: ${c.label}, ${formatLocalTime(t)}`);
+    name.textContent = c.label;
+    pos.textContent = `${i + 1} מתוך ${all.length}`;
+    note.textContent = c.note;
+    // warm the neighbours so the next click is instant
+    for (const d of [1, -1]) new Image().src = srcOf(all[(i + d + all.length) % all.length]);
+  };
+  // RTL: the arrow on the right goes back, the arrow on the left goes forward (as in the lab)
+  $("#ch-prev").addEventListener("click", () => show(i - 1));
+  $("#ch-next").addEventListener("click", () => show(i + 1));
+  $("#channels-box").addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") show(i + 1);
+    else if (e.key === "ArrowRight") show(i - 1);
+    else return;
+    e.preventDefault();
   });
+  name.textContent = visible.label;
+  pos.textContent = `1 מתוך ${all.length}`;
   note.textContent = visible.note;
   $("#channels-box").hidden = false;
 }
