@@ -113,12 +113,13 @@ def regions_from_json(rows: list[dict]) -> list[dict]:
     for r, d in zip(rows, dates):
         if d != last:
             continue
-        lat, lon = r.get("latitude"), r.get("longitude")
-        if (lat is None or lon is None) and r.get("location"):
-            try:
-                lat, lon = parse_location(r["location"])
-            except ValueError:
-                continue
+        # `location` first: in this feed `longitude` is east-positive (N08W51 has
+        # longitude -51), the opposite of our west-positive convention.
+        try:
+            lat, lon = parse_location(r.get("location") or "")
+        except ValueError:
+            lat = r.get("latitude")
+            lon = -r["longitude"] if r.get("longitude") is not None else None
         if lat is None or lon is None:
             continue
         area = _first(r, "area", default=0) or 0
@@ -154,7 +155,7 @@ def latest_probabilities(rows: list[dict]) -> dict | None:
 
 def xray_series(rows: list[dict], step: int = 10) -> dict | None:
     """Long-channel (0.1–0.8 nm) flux, thinned to every `step`-th minute for a sparkline."""
-    long = [r for r in rows if r.get("energy") == "0.1-0.8nm" and r.get("flux") is not None]
+    long = [r for r in rows if r.get("energy") == "0.1-0.8nm" and (r.get("flux") or 0) > 0]  # 0 = data gap
     if not long:
         return None
     long.sort(key=lambda r: r["time_tag"])

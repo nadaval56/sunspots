@@ -42,12 +42,19 @@ def test_regions_from_json_prefers_latest_and_skips_plage():
         {"observed_date": "2026-09-24", "region": 4229, "location": "N18W82", "area": 0, "number_spots": 0},
     ]
     out = noaa.regions_from_json(rows)
-    assert [r["region"] for r in out] == [4231] and out[0]["lat"] == 3
+    assert [r["region"] for r in out] == [4231] and out[0]["lat"] == 3 and out[0]["lon"] == 24
+
+
+def test_regions_json_longitude_is_east_positive():
+    # real row shape (2026-10-01): location N08W51 with longitude -51
+    rows = [{"observed_date": "2026-09-02", "region": 4518, "latitude": 8, "longitude": -51, "area": 10, "number_spots": 2}]
+    assert noaa.regions_from_json(rows)[0]["lon"] == 51
 
 
 def test_xray_series_long_channel_only():
     rows = [{"time_tag": f"2026-09-25T00:{m:02d}:00Z", "energy": e, "flux": 1e-6 * (m + 1)}
             for m in range(25) for e in ("0.05-0.4nm", "0.1-0.8nm")]
+    rows.append({"time_tag": "2026-09-25T00:30:00Z", "energy": "0.1-0.8nm", "flux": 0.0})  # gap
     x = noaa.xray_series(rows, step=10)
     assert x["latest"]["t"] == "2026-09-25T00:24:00Z"
     assert len(x["series"]) == 4  # 0, 10, 20 + latest

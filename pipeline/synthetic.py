@@ -16,6 +16,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from . import solar
+from .sources import HMI_R_1AU
 
 EPOCH = datetime(2026, 9, 23, 6, tzinfo=timezone.utc)
 
@@ -36,7 +37,7 @@ def _synodic_rate(B: float) -> float:
 def render(t: datetime, size: int = 1024, label: bool = True, seed: int | None = None) -> np.ndarray:
     scale = size / 1024
     cx, cy = 508.7 * scale, 517.6 * scale
-    r = 477.3 / solar.earth_sun_distance_au(t) * scale
+    r = HMI_R_1AU / solar.earth_sun_distance_au(t) * scale
     b0 = math.radians(solar.b0_deg(t))
     days = (t - EPOCH).total_seconds() / 86400
 

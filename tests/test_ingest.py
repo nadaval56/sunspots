@@ -13,7 +13,7 @@ from .conftest import T, jpeg
 
 def test_good_frame_passes(good_jpeg):
     vf = validate(good_jpeg, 200, sources.JSOC_IC_1K, T, T)
-    assert vf.disk.r == pytest.approx(475.6, abs=2)
+    assert vf.disk.r == pytest.approx(sources.HMI_R_1AU / solar.earth_sun_distance_au(T), abs=1)
 
 
 def test_http_error_rejected(good_jpeg):

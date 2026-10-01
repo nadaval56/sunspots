@@ -10,13 +10,13 @@
 ### 1. [ ] ליצור את `.claude/settings.json`
 Claude לא יכול ליצור קובץ שמרחיב את ההרשאות שלו עצמו. העתיקו את בלוק ה-JSON מסעיף 2 ב-`docs/BRIEF.md` לקובץ `.claude/settings.json` ועשו commit. אם אתם עובדים ב-auto mode, אפשר לדלג.
 
-### 2. [ ] לפתוח גישת רשת בסביבת Claude Code בענן
+### 2. [x] לפתוח גישת רשת בסביבת Claude Code בענן
 בסביבת הענן של Claude, הכתובות הבאות נחסמו (403 מה-proxy). לכן אי אפשר היה לאמת את מקורות הנתונים, והפיתוח נעשה עם נתונים סינתטיים:
 `jsoc1.stanford.edu`, `sdo.gsfc.nasa.gov`, `services.swpc.noaa.gov`, `www.sidc.be`.
 
 איך: בכותרת של הסשן פותחים את תפריט הסביבה (cloud environment), בוחרים **Edit**, ותחת **Network access** מוסיפים את הדומיינים לרשימה המותרת או בוחרים רמת גישה רחבה יותר. הסבר על הרמות: https://code.claude.com/docs/en/claude-code-on-the-web
 
-### 3. [ ] להריץ את בדיקת המקורות ב-GitHub
+### 3. [x] (לא נחוץ עוד: הבדיקה רצה בהצלחה מהסשן) להריץ את בדיקת המקורות ב-GitHub
 אחרי שה-PR ימוזג: לשונית **Actions**, בוחרים **verify-sources**, ואז **Run workflow**. הטבלה תופיע ב-Summary של הריצה. הדביקו אותה לסשן הבא של Claude כדי שיעדכן את STATUS ויתקן את ה-readers של NOAA אם צריך.
 
 ### 4. [ ] להחליט על שם ודומיין

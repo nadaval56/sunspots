@@ -43,19 +43,18 @@ class SourceSpec:
         return f"{SDO_BROWSE}/{day:%Y/%m/%d}/{stamp}_{self.size}_{self.product}.jpg"
 
 
-# HMI 4k plate scale ≈0.504"/px → ≈476 px radius at 1024 (measured, §4.1).
-# 476 px was measured at ≈1.003 AU (late Sept), so the 1 AU value is ≈477.3.
-# AIA 4k plate scale ≈0.6"/px → ≈400 px at 1024. SDO browse values are estimates
-# and must be re-measured when the hosts are reachable (docs/DECISIONS.md).
-JSOC_IC_1K = SourceSpec("jsoc", "jsoc", "Ic_1k", 1024, 477.3)
-JSOC_IC_4K = SourceSpec("jsoc", "jsoc", "Ic_4k", 4096, 477.3 * 4)
-SDO_HMIIC = SourceSpec("sdo-hmi", "sdo", "HMIIC", 1024, 477.3)
-SDO_1700 = SourceSpec("sdo-1700", "sdo", "1700", 1024, 401.0, fallback_banner=True)
+# Disk radius at 1 AU in a 1024 px frame, measured on real frames 2026-10-01
+# (Kåsa fit × Earth–Sun distance): JSOC Ic_1k and SDO HMIIC 475.2, AIA 1700 400.0.
+HMI_R_1AU = 475.2
+AIA_R_1AU = 400.0
+JSOC_IC_1K = SourceSpec("jsoc", "jsoc", "Ic_1k", 1024, HMI_R_1AU)
+JSOC_IC_4K = SourceSpec("jsoc", "jsoc", "Ic_4k", 4096, HMI_R_1AU * 4)
+SDO_HMIIC = SourceSpec("sdo-hmi", "sdo", "HMIIC", 1024, HMI_R_1AU)
+SDO_1700 = SourceSpec("sdo-1700", "sdo", "1700", 1024, AIA_R_1AU, fallback_banner=True)
 
 HOURLY_CHAIN = [JSOC_IC_1K, SDO_HMIIC, SDO_1700]
 DAILY_CHAIN = [JSOC_IC_4K, JSOC_IC_1K, SDO_HMIIC, SDO_1700]
 
-SYNTHETIC = SourceSpec("synthetic", "synthetic", "Ic_1k", 1024, 477.3)
 
 
 def synthetic_enabled() -> bool:

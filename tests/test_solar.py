@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import numpy as np
 import pytest
 
-from pipeline import solar, synthetic
+from pipeline import solar, sources, synthetic
 
 FIXTURE = [  # day, x, y, cx, cy, R  (JSOC Ic_1k, 06:00 UTC)
     (23, 668.2, 547.8, 508.6, 518.0, 475.6),
@@ -62,7 +62,7 @@ def test_fit_disk_on_synthetic_jsoc_frame():
     disk = solar.fit_disk(synthetic.render(t))
     assert disk.cx == pytest.approx(508.7, abs=0.6)
     assert disk.cy == pytest.approx(517.6, abs=0.6)
-    assert disk.r == pytest.approx(477.3 / solar.earth_sun_distance_au(t), abs=0.8)
+    assert disk.r == pytest.approx(sources.HMI_R_1AU / solar.earth_sun_distance_au(t), abs=0.8)
 
 
 def test_snodgrass_equator():

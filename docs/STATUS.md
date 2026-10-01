@@ -1,28 +1,30 @@
 # סטטוס
 
-## M0: שלד ואימות מקורות (חלקי)
+## M0: שלד ואימות מקורות ✅
 
-**נעשה**
-- מבנה ה-repo: ‏`pipeline/` (Python), ‏`scripts/`, ‏`tests/`, ‏`docs/`, ‏`.github/workflows/`. ‏`CLAUDE.md` מפנה ל-`docs/BRIEF.md`.
-- `scripts/verify_sources.py` בודק את כל 13 הכתובות מסעיף 4 ומדפיס טבלה עם סטטוס, גודל, גיל לפי Last-Modified, ומבנה ה-JSON.
-- `verify-sources.yml`: הרצה ידנית של אותה בדיקה על runner של GitHub.
+- מבנה ה-repo: ‏`pipeline/` (Python), ‏`scripts/`, ‏`tests/`, ‏`docs/`, ‏`.github/workflows/`.
+- `scripts/verify_sources.py` (וגם `verify-sources.yml` להרצה ידנית ב-GitHub).
 
-**פתוח: אימות המקורות עצמם**
-ב-2026-10-01 כל הכתובות נחסמו מסביבת הפיתוח בענן (`ProxyError`, ‏CONNECT 403). זו מדיניות רשת של הסביבה, לא תקלה במקורות:
+**תוצאות, 2026-10-01 09:06 UTC** (אחרי פתיחת הרשת בסביבה):
 
-| מקור | תוצאה מסביבת הפיתוח |
-|---|---|
-| jsoc1.stanford.edu | חסום (403 proxy) |
-| sdo.gsfc.nasa.gov | חסום (403 proxy) |
-| services.swpc.noaa.gov | חסום (403 proxy) |
-| www.sidc.be | חסום (403 proxy) |
+| מקור | סטטוס | גודל | גיל | מבנה / הערה |
+|---|---|---|---|---|
+| JSOC index היום/אתמול | 200 | 75KB / 196KB | — | 1120 / 2944 קישורי jpg |
+| SDO latest HMIIC 1024 | 200 | 197KB | **233 שעות** | תקוע, כמו שה-BRIEF הזהיר |
+| SDO latest 1700 1024 | 200 | 175KB | 233 שעות | |
+| SDO browse index | 200 | 408KB | — | HMIIC האחרון: 24.9 07:30. ‏1700 מתעדכן |
+| NOAA observed cycle | 200 | 512KB | 0 | `time-tag`, `ssn`, `smoothed_ssn`… |
+| NOAA predicted cycle | 200 | 18KB | 0 | `time-tag`, `predicted_ssn`… |
+| NOAA daily SSN | 200 | 476KB | 0 | `Obsdate`, `swpc_ssn` |
+| NOAA srs.txt | 200 | 0.7KB | 0 | ה-parser עובד על הקובץ האמיתי |
+| NOAA solar_regions.json | 200 | 136KB | 0 | `location`, `latitude`, **`longitude` חיובי למזרח** (ראו DECISIONS #14) |
+| NOAA solar_probabilities | 200 | 9KB | 0 | `date`, `c_class_1_day`… |
+| GOES xrays-1-day | 200 | 647KB | 0 | `time_tag`, `energy`, `flux`. יש דגימות עם `flux=0` (חוסר נתונים) |
+| SILSO daily CSV | 200 | 2.9MB | — | `;`-separated: שנה;חודש;יום;שנה עשרונית;SN;סטיית תקן;תצפיות;זמני. נשמר ב-`data/silso_daily.csv` |
 
-לכן:
-- מבנה ה-JSON של NOAA **לא אומת**. ה-readers ב-`pipeline/noaa.py` סלחניים (DECISIONS #13).
-- הרדיוס של SDO browse הוא הערכה (DECISIONS #4).
-- `data/silso_daily.csv` עוד לא הורד.
+**הרצה אמיתית מקומית:** ingest הוריד את JSOC `Ic_1k` של 08:30 ועבר את כל הבדיקות. daily שמר ארכיון `Ic_4k` ב-2048, ו-`today.json` מלא בנתוני NOAA אמיתיים (מספר כתמים 27, אזורים 4535 ו-4544, ‏C 45%, ‏M 15%, ‏X 1%).
 
-ראו HUMAN_TODO סעיפים 2–3.
+**מדידת רדיוס (DECISIONS #4):** ב-1AU, ‏HMI הוא 475.2 פיקסלים (JSOC ו-SDO זהים) ו-AIA 1700 הוא 400.0. מרכז הדיסקה ב-JSOC היום הוא (511.5, 511.5), ולא (508.7, 517.6) כמו ב-BRIEF. כנראה שהמיקום השתנה, וזה עוד סיבה להתאים את הדיסקה מחדש בכל פריים.
 
 ## M1: ingest ✅ (מקומית)
 - `python -m pipeline.ingest` עם `STORAGE=local`, שכותב ל-`./media-local/`.
