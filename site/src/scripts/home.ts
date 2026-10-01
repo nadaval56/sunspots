@@ -317,7 +317,9 @@ function israelMidnight(t: number): number {
 function drawXray(host: HTMLElement, x: Xray) {
   // Time runs left→right as on the instruments, also in an RTL page (DECISIONS #18).
   const W = Math.max(300, Math.round(host.clientWidth || 560));
-  const H = 214, padL = 34, padR = 12, padT = 24, padB = 26;
+  // Below the plot: a row of hours, and under it a row of dates.
+  const H = 226, padL = 34, padR = 12, padT = 10, padB = 48;
+  const hourY = H - padB + 17, dateY = H - 6;
   // All of yesterday and today so far, on the Israel clock: two clear halves, "אתמול" and "היום".
   // (Older data, from the daily today.json fallback, may start later; then the window starts there.)
   const t1 = new Date(x.latest.t).getTime();
@@ -342,29 +344,33 @@ function drawXray(host: HTMLElement, x: Xray) {
     svgEl("text", { x: padL - 8, y: y + 4, class: "axis-label" }, svg).textContent = name;
   }
   // A tick every 6 hours on the Israel clock, "חצות" at midnight, "עכשיו" at the right edge.
+  // An hour label too close to "עכשיו" is dropped, so the two never touch.
   const HOUR = 3600e3;
+  const nowGap = 62;
   for (let t = Math.ceil(t0 / HOUR) * HOUR; t <= t1; t += HOUR) {
     const h = Number(new Date(t).toLocaleString("en-GB", { timeZone: TZ, hour: "2-digit", hourCycle: "h23" }));
     if (h % 6 !== 0) continue;
-    const isMidnight = h === 0;
-    svgEl("line", { x1: sx(t), x2: sx(t), y1: padT, y2: H - padB, class: isMidnight ? "midnight" : "grid" }, svg);
-    if (sx(t) < W - padR - 44 && sx(t) > padL + 14)
-      svgEl("text", { x: sx(t), y: H - 8, class: "time-label", "text-anchor": "middle" }, svg).textContent = isMidnight ? "חצות" : formatClock(new Date(t));
+    svgEl("line", { x1: sx(t), x2: sx(t), y1: padT, y2: H - padB, class: "grid" }, svg);
+    if (sx(t) < W - padR - nowGap && sx(t) > padL + 14)
+      svgEl("text", { x: sx(t), y: hourY, class: "time-label", "text-anchor": "middle" }, svg).textContent = h === 0 ? "חצות" : formatClock(new Date(t));
   }
-  svgEl("text", { x: W - padR, y: H - 8, class: "time-label now", "text-anchor": "end" }, svg).textContent = "עכשיו";
-  // The date above each part, centred: "30 בספטמבר", or "30.9" when the part is narrow.
-  // Right after midnight today is a sliver, so its date sits at the right edge instead.
+  svgEl("text", { x: W - padR, y: hourY, class: "time-label now", "text-anchor": "end" }, svg).textContent = "עכשיו";
+
+  // The date of each day under its hours: "30 בספטמבר", or "30.9" when its part is narrow.
+  // A short line at midnight separates the two dates.
   const day = (a: number, b: number) => {
     if (b - a < 0.5 * HOUR) return;
     const mid = a + (b - a) / 2;
     const long = new Date(mid).toLocaleDateString("he-IL", { timeZone: TZ, day: "numeric", month: "long" });
     const short = new Date(mid).toLocaleDateString("he-IL", { timeZone: TZ, day: "numeric", month: "numeric" }).replace(/\.\d{4}$/, "");
     const width = sx(b) - sx(a);
-    const wide = width > 60;
-    const atEnd = !wide && b === t1;
-    svgEl("text", { x: wide ? (sx(a) + sx(b)) / 2 : atEnd ? W - padR : sx(a) + 4, y: padT - 8, class: "day-label", direction: "rtl", "text-anchor": wide ? "middle" : atEnd ? "start" : "end" }, svg).textContent = width > 100 ? long : short;
+    if (width < 26) return;
+    svgEl("text", { x: (sx(a) + sx(b)) / 2, y: dateY, class: "day-label", direction: "rtl", "text-anchor": "middle" }, svg).textContent = width > 100 ? long : short;
   };
-  if (today0 > t0) day(t0, today0);
+  if (today0 > t0) {
+    day(t0, today0);
+    svgEl("line", { x1: sx(today0), x2: sx(today0), y1: hourY + 6, y2: H, class: "day-sep" }, svg);
+  }
   day(Math.max(today0, t0), t1);
 
   const pts = series.map(([t, f]) => [sx(new Date(t).getTime()), sy(f)] as const);
