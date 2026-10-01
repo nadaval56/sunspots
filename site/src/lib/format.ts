@@ -10,9 +10,17 @@ export function relativeFromNow(t: Date, now: Date = new Date()): string {
   return rtf.format(Math.round(s / 86400), "day");
 }
 
-/** Local wall-clock time in the viewer's zone, Hebrew month names. */
+/** The site shows times in Israel time; UTC is kept alongside where scientists expect it. */
+export const TZ = "Asia/Jerusalem";
+
+/** "1 באוקטובר בשעה 14:30" in Israel time. */
 export function formatLocalTime(t: Date): string {
-  return t.toLocaleString("he-IL", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
+  return t.toLocaleString("he-IL", { timeZone: TZ, day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
+}
+
+/** "14:30" in Israel time. */
+export function formatClock(t: Date): string {
+  return t.toLocaleTimeString("he-IL", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hour12: false });
 }
 
 /** "2026-10-01 08:30 UTC" */

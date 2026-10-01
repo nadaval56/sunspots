@@ -8,6 +8,7 @@ import Base from "../layouts/Base.astro";
     <p id="synthetic-note" class="banner-warn" hidden>מוצגים נתוני פיתוח מדומים, לא תצפית אמיתית.</p>
 
     <section class="today" aria-labelledby="today-title">
+      <div class="plate-col">
       <figure class="plate">
         <div class="plate-frame" id="plate-frame">
           <img id="sun" alt="" width="1024" height="1024" decoding="async" fetchpriority="high" />
@@ -15,19 +16,21 @@ import Base from "../layouts/Base.astro";
           <p id="plate-empty" class="plate-empty">טוען את תמונת השמש…</p>
         </div>
         <figcaption>
-          <div class="plate-tools">
-            <button type="button" id="toggle-regions" aria-pressed="true">אזורים פעילים</button>
-            <button type="button" id="toggle-earth" aria-pressed="false">כדור הארץ בקנה מידה</button>
-          </div>
-          <p id="earth-hint" class="hint" hidden>
-            העיגול הכחול הוא כדור הארץ, באותו קנה מידה של השמש. גררו אותו ליד כתם, או הזיזו אותו בחיצים אחרי לחיצה עליו.
-          </p>
           <p class="stamp">
             <span id="frame-time">—</span>
             <span id="frame-age" class="age"></span>
           </p>
         </figcaption>
       </figure>
+      <fieldset class="plate-options">
+        <legend class="visually-hidden">מה להציג על התמונה</legend>
+        <label><input type="checkbox" id="toggle-regions" checked /> סימון האזורים הפעילים</label>
+        <label><input type="checkbox" id="toggle-earth" /> כדור הארץ בקנה מידה</label>
+        <p id="earth-hint" class="hint" hidden>
+          העיגול הכחול הקטן הוא כדור הארץ, באותו קנה מידה של השמש. גררו אותו ליד כתם כדי להשוות. במקלדת: לחצו Tab עד שהוא מסומן, והזיזו בחיצים.
+        </p>
+      </fieldset>
+      </div>
 
       <div class="notebook">
         <h1 id="today-title">כתמי השמש עכשיו</h1>
@@ -45,9 +48,26 @@ import Base from "../layouts/Base.astro";
             <dd><span id="region-count" class="big num">—</span></dd>
           </div>
         </dl>
-        <p class="hint">
-          <strong>מספר הכתמים</strong> (Sunspot Number) הוא מדד שמשלב את מספר קבוצות הכתמים ואת מספר הכתמים הבודדים. סופרים אותו כך מאז המאה ה-19.
-        </p>
+        <details class="explain-ssn">
+          <summary>מה זה "מספר הכתמים", ואיך מחשבים אותו?</summary>
+          <p>
+            כתמים על השמש מופיעים כמעט תמיד בקבוצות. קבוצה אחת יכולה להכיל כתם בודד או עשרות כתמים קטנים. כדי לסכם במספר אחד כמה השמש "מנומרת" היום,
+            האסטרונום השווייצרי רודולף וולף המציא ב-1848 נוסחה פשוטה:
+          </p>
+          <p class="formula-line" dir="ltr"><span class="num">R = 10 × g + s</span></p>
+          <ul>
+            <li><b>g</b> = מספר <b>הקבוצות</b> (אזורים פעילים) שרואים על השמש</li>
+            <li><b>s</b> = מספר <b>הכתמים</b> הבודדים בכל הקבוצות יחד</li>
+          </ul>
+          <p>
+            כל קבוצה שווה 10 נקודות, כי הופעה של קבוצה חדשה היא אירוע גדול יותר מעוד כתם קטן בקבוצה קיימת.
+          </p>
+          <p id="ssn-worked" class="worked" hidden></p>
+          <p class="hint">
+            המספר הרשמי מחושב ממצפים רבים ברחבי העולם, ולכן הוא יכול להיות קצת שונה מהחישוב לפי הטבלה למטה.
+            <a href="cycle/">איך מספר הכתמים עולה ויורד במחזור של 11 שנים ←</a>
+          </p>
+        </details>
 
         <section aria-labelledby="regions-title">
           <h2 id="regions-title" class="h3">אזורים פעילים</h2>
@@ -76,10 +96,13 @@ import Base from "../layouts/Base.astro";
         </section>
 
         <section aria-labelledby="xray-title">
-          <h2 id="xray-title" class="h3">קרני X מהשמש, 24 שעות</h2>
-          <p class="xray-now">עכשיו: <strong id="xray-class" class="num">—</strong></p>
+          <h2 id="xray-title" class="h3">קרני X מהשמש ב-24 השעות האחרונות</h2>
+          <p class="xray-now">המדידה האחרונה: <strong id="xray-class" class="num">—</strong> <span id="xray-when" class="sub"></span></p>
           <div class="chart" id="xray-chart"></div>
-          <p class="hint">מדידה של לוויין GOES. הסקאלה לוגריתמית: כל קו בגרף מסמן עוצמה גדולה פי 10 מהקו שמתחתיו.</p>
+          <p class="hint">
+            הלוויין GOES מודד כל דקה כמה קרני X מגיעות מהשמש. בגרף נקודה כל 10 דקות, והשעות לפי שעון ישראל. הסקאלה לוגריתמית: כל קו מסמן עוצמה
+            גדולה פי 10 מהקו שמתחתיו, והאותיות A, ‏B, ‏C, ‏M ו-X הן אותן דרגות שבהן מסווגים התפרצויות. קפיצה חדה בגרף היא התפרצות.
+          </p>
         </section>
       </div>
     </section>
@@ -121,11 +144,13 @@ import Base from "../layouts/Base.astro";
     color: var(--plate-text);
     border-radius: var(--radius);
     padding: clamp(0.5rem, 2vw, 1rem);
+  }
+  .plate-col {
     position: sticky;
     top: 1rem;
   }
   @media (max-width: 880px) {
-    .plate {
+    .plate-col {
       position: static;
     }
   }
@@ -154,6 +179,62 @@ import Base from "../layouts/Base.astro";
   }
   .plate figcaption {
     padding-top: 0.75rem;
+  }
+  .plate-options {
+    border: 0;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.5rem;
+  }
+  .plate-options label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    min-height: 2.25rem;
+  }
+  .plate-options input {
+    inline-size: 1.15rem;
+    block-size: 1.15rem;
+    accent-color: var(--accent-fill);
+  }
+  .plate-options .hint {
+    flex-basis: 100%;
+    margin: 0;
+  }
+  .explain-ssn {
+    margin: 0.75rem 0 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.6rem 1rem;
+  }
+  .explain-ssn summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .explain-ssn[open] summary {
+    margin-bottom: 0.5rem;
+  }
+  .explain-ssn ul {
+    margin: 0 0 0.75rem;
+    padding-inline-start: 1.2rem;
+  }
+  .formula-line {
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    background: var(--surface-2);
+    border-radius: var(--radius-sm);
+    padding: 0.4rem;
+  }
+  .worked {
+    background: var(--accent-soft);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.75rem;
   }
   .plate-tools {
     display: flex;

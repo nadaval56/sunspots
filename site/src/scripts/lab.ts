@@ -414,7 +414,7 @@ function buildDays() {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "day";
-    b.innerHTML = `<span>${f.date.slice(8, 10)}.${f.date.slice(5, 7)}</span><span class="dots" aria-hidden="true"></span>`;
+    b.innerHTML = `<span class="d">${Number(f.date.slice(8, 10))}</span><span class="m">${new Date(f.date + "T12:00:00Z").toLocaleDateString("he-IL", { month: "short", timeZone: "UTC" })}</span><span class="dots" aria-hidden="true"></span>`;
     b.addEventListener("click", () => setDay(i));
     daysEl.append(b);
   });
@@ -438,12 +438,22 @@ function renderDays() {
     const fr = frames()[i];
     const marked = [0, 1].filter((ti) => tracks()[ti][fr.date]);
     b.setAttribute("aria-current", i === state.day ? "true" : "false");
+    if (i === state.day) keepInStrip(b);
     b.setAttribute(
       "aria-label",
       `יום ${fmtDate(fr.date)}` + (marked.length ? `, מסומן: ${marked.map((ti) => TRACK_NAMES[ti]).join(" ו")}` : ""),
     );
     b.querySelector(".dots")!.innerHTML = marked.map((ti) => `<span class="dot" style="background:${PLATE_COLORS[ti]}"></span>`).join("");
   });
+}
+
+/** Scroll the day strip (never the page) so the current day is visible. */
+function keepInStrip(b: HTMLElement) {
+  const strip = daysEl.getBoundingClientRect();
+  const r = b.getBoundingClientRect();
+  if (r.left < strip.left || r.right > strip.right) {
+    daysEl.scrollLeft += r.left - strip.left - (strip.width - r.width) / 2;
+  }
 }
 
 // In an RTL page the day strip runs right to left, so ArrowLeft is the next day.
