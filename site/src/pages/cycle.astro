@@ -16,7 +16,7 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
     <section class="block" aria-labelledby="now-title">
       <h2 id="now-title">המחזור הנוכחי</h2>
       <p>
-        סופרים את המחזורים מאז 1755. המחזור הנוכחי, <strong>מחזור 25</strong>, התחיל במינימום של דצמבר 2019. באוקטובר 2024 הודיעו NASA ו-NOAA
+        סופרים את המחזורים מאז 1755. המחזור הנוכחי, מחזור 25, התחיל במינימום של דצמבר 2019. באוקטובר 2024 הודיעו NASA ו-NOAA
         שהשמש נמצאת בתקופת המקסימום שלו.
       </p>
 
@@ -31,8 +31,8 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
         <div class="charthost" id="cycle-chart"><p class="hint">טוען נתונים…</p></div>
         <ul class="facts" id="cycle-facts"></ul>
         <p class="hint">
-          <strong>ממוצע מוחלק</strong>: ממוצע של 13 חודשים סביב כל חודש, שמבטל את הקפיצות מחודש לחודש ומראה את המגמה. לכן הקו המוחלק נעצר כחצי שנה
-          לפני הנתון האחרון: הוא מחכה לחודשים שעוד לא עברו. <span id="cycle-updated"></span>
+          <strong>ממוצע מוחלק</strong> הוא ממוצע של 13 חודשים סביב כל חודש. הוא מבטל את הקפיצות מחודש לחודש ומראה את המגמה. בגלל זה הקו המוחלק נעצר כחצי
+          שנה לפני הנתון האחרון, כי חסרים לו החודשים שעוד לא עברו. <span id="cycle-updated"></span>
         </p>
         <p class="source">מקור: <span lang="en" dir="ltr">NOAA Space Weather Prediction Center</span> (נתונים נצפים של SILSO ותחזית SWPC).</p>
       </figure>
@@ -40,7 +40,7 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 
     <section class="block" aria-labelledby="day-title">
       <h2 id="day-title">השמש ביום הזה</h2>
-      <p>כמה כתמים היו על השמש בדיוק בתאריך של היום, לפני 50, 100 ו-200 שנה? המספרים הם מספר הכתמים היומי, כמו זה שמופיע בעמוד הבית.</p>
+      <p>מספר הכתמים היומי בתאריך של היום לפני 50, 100 ו-200 שנה. זה אותו מדד שמופיע בעמוד הבית.</p>
       <div class="day-picker">
         <label for="this-day-date">תאריך</label>
         <input type="date" id="this-day-date" />
@@ -53,7 +53,7 @@ const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
     <section class="block" aria-labelledby="long-title">
       <h2 id="long-title">מאתיים שנה של כתמים</h2>
       <p>
-        בגרף הזה כל נקודה היא ממוצע של שנה שלמה. רואים בו בבירור את הגלים של כ-11 שנים, וגם שהם לא שווים: יש מחזורים חזקים ויש חלשים, והאורך משתנה
+        בגרף הזה כל נקודה היא ממוצע של שנה שלמה. רואים בו את הגלים של כ-11 שנים, וגם שהם לא שווים: יש מחזורים חזקים ויש חלשים, והאורך משתנה
         בין כ-9 לכ-14 שנים.
       </p>
       <figure class="chart-card panel">

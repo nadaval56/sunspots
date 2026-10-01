@@ -324,7 +324,8 @@ for (const url of PAGES) {
     dir: document.documentElement.dir,
     noAlt: [...document.querySelectorAll('img')].filter(i => !i.hasAttribute('alt')).length,
     noName: [...document.querySelectorAll('button,a[href]')].filter(b =>
-      !(b.innerText || '').trim() && !b.getAttribute('aria-label') && !b.getAttribute('title')).length,
+      /* textContent ולא innerText: קישור בתוך <details> סגור מחזיר innerText ריק, אבל יש לו שם. */
+      !(b.textContent || '').trim() && !b.getAttribute('aria-label') && !b.getAttribute('title')).length,
     dup: (() => { const ids = [...document.querySelectorAll('[id]')].map(e => e.id); return [...new Set(ids.filter((v, i) => ids.indexOf(v) !== i))]; })(),
     rel: [...document.querySelectorAll('a[href]')].map(a => a.href).filter(h => h.startsWith(location.origin)),
   }));

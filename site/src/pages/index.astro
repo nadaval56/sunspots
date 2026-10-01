@@ -105,7 +105,7 @@ import Base from "../layouts/Base.astro";
         <section aria-labelledby="flare-title">
           <h2 id="flare-title" class="h3">הסתברות להתפרצות ב-24 השעות הקרובות</h2>
           <div id="flare-bars" class="bars" role="list"></div>
-          <p class="hint">התפרצות (flare) היא הבזק פתאומי של קרינה. ההתפרצויות מסווגות לפי עוצמתן: C, ואחריה M, חזקה פי 10, ו-X, חזקה פי 100.</p>
+          <p class="hint">התפרצות (flare) היא הבזק פתאומי של קרינה. לפי העוצמה מחלקים את ההתפרצויות לסוגים C, ‏M ו-X. התפרצות M חזקה פי 10 מ-C, ו-X חזקה פי 100 מ-C.</p>
         </section>
 
         <section aria-labelledby="xray-title">
@@ -114,7 +114,7 @@ import Base from "../layouts/Base.astro";
           <div class="chart" id="xray-chart"></div>
           <p class="hint">
             הלוויין GOES מודד כל דקה כמה קרני X מגיעות מהשמש. בגרף נקודה כל 10 דקות, והשעות לפי שעון ישראל. הסקאלה לוגריתמית: כל קו מסמן עוצמה
-            גדולה פי 10 מהקו שמתחתיו, והאותיות A, ‏B, ‏C, ‏M ו-X הן אותן דרגות שבהן מסווגים התפרצויות. קפיצה חדה בגרף היא התפרצות.
+            גדולה פי 10 מהקו שמתחתיו, והאותיות A, ‏B, ‏C, ‏M ו-X הן הדרגות שלפיהן מסווגים התפרצויות. קפיצה חדה בגרף היא התפרצות.
           </p>
         </section>
       </div>
@@ -122,13 +122,13 @@ import Base from "../layouts/Base.astro";
 
     <section id="timelapse" class="timelapse" aria-labelledby="timelapse-title" hidden>
       <h2 id="timelapse-title">30 ימים בסרטון אחד</h2>
-      <p>כל שעה נוסף פריים. בסרטון רואים איך הכתמים נעים משמאל לימין, כי השמש מסתובבת, ואיך הם נולדים, משנים צורה ונעלמים.</p>
+      <p>כל שעה נוסף לסרטון פריים. רואים בו את הכתמים נעים משמאל לימין עם סיבוב השמש, ואיך הם נולדים, משנים צורה ונעלמים.</p>
       <video id="timelapse-video" controls muted playsinline preload="none" width="1024" height="1024"></video>
       <p class="hint" id="timelapse-range"></p>
     </section>
 
     <p id="load-error" class="banner-warn" hidden>
-      הנתונים החיים עדיין לא זמינים. התמונות והנתונים יופיעו כאן אחרי שה-pipeline יתחיל לרוץ.
+      הנתונים החיים עדיין לא זמינים. התמונות והנתונים יופיעו כאן כשהעדכון האוטומטי יתחיל לפעול.
     </p>
   </div>
 </Base>
