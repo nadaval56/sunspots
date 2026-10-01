@@ -1,0 +1,49 @@
+# Daily archive, timelapse, NOAA data (BRIEF §5.4) and the cron keepalive (§3).
+name: daily
+on:
+  schedule:
+    - cron: "45 0 * * *"
+  workflow_dispatch:
+    inputs:
+      backfill_days:
+        description: "Run backfill.py with this many days first (0 = no)"
+        required: false
+        default: "0"
+concurrency:
+  group: media-writer
+  cancel-in-progress: false
+jobs:
+  daily:
+    if: vars.PIPELINE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      STORAGE: r2
+      SUNSPOTS_DOMAIN: ${{ vars.SUNSPOTS_DOMAIN }}
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ vars.R2_BUCKET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-dejavu-core
+      - run: pip install -r requirements.txt
+      - if: inputs.backfill_days && inputs.backfill_days != '0'
+        run: python -m pipeline.backfill --days ${{ inputs.backfill_days }} --no-timelapse
+      - run: python -m pipeline.daily
+
+  # Public repos lose scheduled workflows after 60 idle days. Media lives in R2,
+  # so there are no commits; keepalive re-enables via the API (no empty commits).
+  keepalive:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gautamkrishnar/keepalive-workflow@v2
+        with:
+          use_api: true

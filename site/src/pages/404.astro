@@ -1,0 +1,11 @@
+---
+import Base from "../layouts/Base.astro";
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+---
+
+<Base title="העמוד לא נמצא">
+  <article class="wrap" style="padding-top:2rem">
+    <h1>העמוד לא נמצא</h1>
+    <p><a href={base}>חזרה לשמש של היום</a></p>
+  </article>
+</Base>

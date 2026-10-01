@@ -1,0 +1,50 @@
+# Build the Astro site on every push to main and publish it to GitHub Pages
+# (BRIEF §3). The deploy job waits for the repo variable PAGES_ENABLED=true,
+# set after Pages is switched on in Settings (docs/HUMAN_TODO.md).
+name: deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: site
+    env:
+      # without a custom domain Pages serves the site under /<repo>/
+      SITE_URL: ${{ vars.SITE_URL || format('https://{0}.github.io', github.repository_owner) }}
+      SITE_BASE: ${{ vars.SITE_BASE || format('/{0}/', github.event.repository.name) }}
+      PUBLIC_MEDIA_BASE: ${{ vars.PUBLIC_MEDIA_BASE || 'https://media.sunspots.example' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    if: vars.PAGES_ENABLED == 'true'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

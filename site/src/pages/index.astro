@@ -1,0 +1,265 @@
+---
+import Base from "../layouts/Base.astro";
+---
+
+<Base>
+  <div class="wrap">
+    <div id="fallback-banner" class="banner-warn" role="status" hidden></div>
+    <p id="synthetic-note" class="banner-warn" hidden>מוצגים נתוני פיתוח מדומים, לא תצפית אמיתית.</p>
+
+    <section class="today" aria-labelledby="today-title">
+      <figure class="plate">
+        <div class="plate-frame" id="plate-frame">
+          <img id="sun" alt="" width="1024" height="1024" decoding="async" fetchpriority="high" />
+          <svg id="overlay" viewBox="0 0 1000 1000" aria-hidden="true"></svg>
+          <p id="plate-empty" class="plate-empty">טוען את תמונת השמש…</p>
+        </div>
+        <figcaption>
+          <div class="plate-tools">
+            <button type="button" id="toggle-regions" aria-pressed="true">אזורים פעילים</button>
+            <button type="button" id="toggle-earth" aria-pressed="false">כדור הארץ בקנה מידה</button>
+          </div>
+          <p id="earth-hint" class="hint" hidden>
+            העיגול הכחול הוא כדור הארץ, באותו קנה מידה של השמש. גררו אותו ליד כתם, או הזיזו אותו בחיצים אחרי לחיצה עליו.
+          </p>
+          <p class="stamp">
+            <span id="frame-time">—</span>
+            <span id="frame-age" class="age"></span>
+          </p>
+        </figcaption>
+      </figure>
+
+      <div class="notebook">
+        <h1 id="today-title">השמש היום</h1>
+        <p class="lede">
+          תמונה של השמש באור נראה, שמתעדכנת כל שעה. הכתמים הכהים הם אזורים קרים יותר על פני השמש, שבהם שדה מגנטי חזק עוצר את זרימת החום מבפנים.
+        </p>
+
+        <dl class="stats">
+          <div class="stat">
+            <dt class="label">מספר הכתמים היומי</dt>
+            <dd><span id="ssn" class="big num">—</span> <span id="ssn-date" class="sub"></span></dd>
+          </div>
+          <div class="stat">
+            <dt class="label">אזורים פעילים</dt>
+            <dd><span id="region-count" class="big num">—</span></dd>
+          </div>
+        </dl>
+        <p class="hint">
+          <strong>מספר הכתמים</strong> (Sunspot Number) הוא מדד שמשלב את מספר קבוצות הכתמים ואת מספר הכתמים הבודדים. סופרים אותו כך מאז המאה ה-19.
+        </p>
+
+        <section aria-labelledby="regions-title">
+          <h2 id="regions-title" class="h3">אזורים פעילים</h2>
+          <div class="table-scroll">
+            <table id="regions-table">
+              <caption class="visually-hidden">אזורים פעילים על השמש לפי NOAA</caption>
+              <thead>
+                <tr>
+                  <th scope="col">מספר</th>
+                  <th scope="col">מיקום</th>
+                  <th scope="col">שטח</th>
+                  <th scope="col">כתמים</th>
+                  <th scope="col">סיווג מגנטי</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="hint">המיקומים הם לרגע שבו צולמה התמונה. שטח: במיליוניות של חצי כדור השמש. N/S הם קו רוחב צפוני/דרומי, ו-E/W הם מזרח/מערב ממרכז הדיסקה.</p>
+        </section>
+
+        <section aria-labelledby="flare-title">
+          <h2 id="flare-title" class="h3">הסתברות להתפרצות ב-24 השעות הקרובות</h2>
+          <div id="flare-bars" class="bars" role="list"></div>
+          <p class="hint">התפרצות (flare) היא הבזק פתאומי של קרינה. ההתפרצויות מסווגות לפי עוצמתן: C, ואחריה M, חזקה פי 10, ו-X, חזקה פי 100.</p>
+        </section>
+
+        <section aria-labelledby="xray-title">
+          <h2 id="xray-title" class="h3">קרני X מהשמש, 24 שעות</h2>
+          <p class="xray-now">עכשיו: <strong id="xray-class" class="num">—</strong></p>
+          <div class="chart" id="xray-chart"></div>
+          <p class="hint">מדידה של לוויין GOES. הסקאלה לוגריתמית: כל קו בגרף מסמן עוצמה גדולה פי 10 מהקו שמתחתיו.</p>
+        </section>
+      </div>
+    </section>
+
+    <section id="timelapse" class="timelapse" aria-labelledby="timelapse-title" hidden>
+      <h2 id="timelapse-title">30 ימים בסרטון אחד</h2>
+      <p>כל שעה נוסף פריים. בסרטון רואים איך הכתמים נעים משמאל לימין, כי השמש מסתובבת, ואיך הם נולדים, משנים צורה ונעלמים.</p>
+      <video id="timelapse-video" controls muted playsinline preload="none" width="1024" height="1024"></video>
+      <p class="hint" id="timelapse-range"></p>
+    </section>
+
+    <p id="load-error" class="banner-warn" hidden>
+      הנתונים החיים עדיין לא זמינים. התמונות והנתונים יופיעו כאן אחרי שה-pipeline יתחיל לרוץ.
+    </p>
+  </div>
+</Base>
+
+<script>
+  import "../scripts/home";
+</script>
+
+<style>
+  .today {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    margin-top: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 880px) {
+    .today {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .plate {
+    margin: 0;
+    background: var(--plate);
+    color: var(--plate-text);
+    border-radius: var(--radius);
+    padding: clamp(0.5rem, 2vw, 1rem);
+    position: sticky;
+    top: 1rem;
+  }
+  @media (max-width: 880px) {
+    .plate {
+      position: static;
+    }
+  }
+  .plate-frame {
+    position: relative;
+    aspect-ratio: 1;
+  }
+  .plate-frame img,
+  .plate-frame svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .plate-frame img[src=""],
+  .plate-frame img:not([src]) {
+    visibility: hidden;
+  }
+  .plate-empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    color: var(--plate-text);
+  }
+  .plate figcaption {
+    padding-top: 0.75rem;
+  }
+  .plate-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .plate-tools button {
+    background: transparent;
+    color: var(--plate-text);
+    border-color: #3a4552;
+  }
+  .plate-tools button[aria-pressed="true"] {
+    background: #10283d;
+    border-color: var(--track-1);
+    color: #fff;
+  }
+  .plate .hint {
+    color: #9fb0c1;
+  }
+  .stamp {
+    margin: 0.5rem 0 0;
+    font-size: 0.95rem;
+  }
+  .stamp time {
+    white-space: nowrap;
+  }
+  .age {
+    color: #9fb0c1;
+    margin-inline-start: 0.5rem;
+  }
+
+  .notebook > section {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.25rem;
+    margin-top: 1.25rem;
+  }
+  .lede {
+    color: var(--muted);
+  }
+  .h3 {
+    font-size: 1.2rem;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 1.25rem 0 0.5rem;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+  }
+  .stat dd {
+    margin: 0;
+  }
+  .big {
+    font-size: 2.25rem;
+    line-height: 1.1;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .hint {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95rem;
+  }
+  th,
+  td {
+    text-align: start;
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  th {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  .xray-now {
+    margin-bottom: 0.25rem;
+  }
+  .chart {
+    position: relative;
+  }
+
+  .timelapse {
+    margin-top: 3rem;
+  }
+  .timelapse video {
+    display: block;
+    width: 100%;
+    max-width: 720px;
+    height: auto;
+    background: var(--plate);
+    border-radius: var(--radius);
+  }
+</style>

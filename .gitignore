@@ -1,0 +1,12 @@
+# media never goes into git (BRIEF §3)
+media-local/
+tmp/
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+node_modules/
+dist/
+.astro/
+.env
+.env.*
