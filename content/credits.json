@@ -20,24 +20,24 @@
     "notes": "Same BnF scan series as the 28 June drawing. Downloaded as the 960 px Commons rendition, cropped around the disk, mild contrast stretch, resized to 760 px. Not rotated or mirrored."
   },
   {
-    "file": "site/public/lab-archive/*.jpg; live frames and daily archive (media)",
-    "title": "SDO/HMI continuum intensity images (Ic_1k, Ic_4k)",
+    "file": "site/public/lab-archive/*.jpg; live frames, daily archive and latest/magnetogram (media)",
+    "title": "SDO/HMI continuum intensity images (Ic_1k, Ic_4k) and line-of-sight magnetograms (M_1k)",
     "author": "NASA/SDO and the HMI science team; served by the Joint Science Operations Center (JSOC), Stanford University",
     "date": "2026–",
     "source_url": "https://jsoc1.stanford.edu/data/hmi/images/",
     "license": "Not copyrighted (NASA): \"SDO images and movies are not copyrighted unless explicitly noted\". Credit: Courtesy of NASA/SDO and the HMI science team.",
     "license_url": "https://sdo.gsfc.nasa.gov/data/rules.php",
-    "notes": "Cropped around the disk, outside of the disk blacked out (removes the text label), resized and re-encoded (WebP/JPEG)."
+    "notes": "Cropped around the disk, outside of the disk blacked out (removes the text label), resized and re-encoded (WebP/JPEG). The magnetogram is shown only as the latest image in the home page filter switcher."
   },
   {
-    "file": "fallback frames (media)",
-    "title": "SDO browse images: HMI continuum (HMIIC) and AIA 1700 Å",
+    "file": "fallback frames; latest/aia171, aia304, aia1700 (media)",
+    "title": "SDO browse images: HMI continuum (HMIIC) and AIA 171 Å, 304 Å and 1700 Å",
     "author": "NASA/SDO and the AIA and HMI science teams; NASA Goddard Space Flight Center",
     "date": "2026–",
     "source_url": "https://sdo.gsfc.nasa.gov/assets/img/browse/",
     "license": "Not copyrighted (NASA). Credit: Courtesy of NASA/SDO and the AIA, EVE, and HMI science teams.",
     "license_url": "https://sdo.gsfc.nasa.gov/data/rules.php",
-    "notes": "Used only when JSOC is unavailable (BRIEF §4.2)."
+    "notes": "HMIIC and 1700 as hourly fallback when JSOC is unavailable (BRIEF §4.2). AIA 171, 304 and 1700: latest image only, for the home page filter switcher; cropped to the same framing as the continuum frame, not masked (the corona above the limb stays)."
   },
   {
     "file": "today.json, cycle.json (media)",

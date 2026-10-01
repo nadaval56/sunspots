@@ -31,6 +31,7 @@ class ValidationError(Exception):
 class ValidFrame:
     rgb: np.ndarray
     disk: solar.Disk
+    geometry: str = "fit"  # fit | known | continuum (extra channels only)
 
 
 def check_http(status: int, data: bytes) -> None:
@@ -99,3 +100,67 @@ def validate(
     check_saturation(rgb, disk)
     check_disk(disk, spec, frame_time, rgb.shape[:2])
     return ValidFrame(rgb, disk)
+
+
+# --- extra channels (pipeline/channels.py) -----------------------------------
+
+# AIA EUV frames have a bright limb and corona, so a threshold fit is unreliable
+# (on 2026-10-01 the Kåsa fit gave R=497 for 171 and 440 for 304, vs ~400).
+# SDO browse frames are centred, so the disk is placed from known geometry and
+# only checked for presence: the disk (<0.9R) must be clearly brighter than a
+# ring at 1.15–1.3R. Measured 2026-10-01: 171 ×3.9, 304 ×143, 1700 ×4·10⁴;
+# a blank or grey frame gives ×1.
+DISK_CONTRAST_MIN = 2.0
+DISK_MEAN_MIN = 10.0
+
+
+def known_disk(spec: SourceSpec, t: datetime, shape: tuple[int, int]) -> solar.Disk:
+    h, w = shape
+    return solar.Disk((w - 1) / 2, (h - 1) / 2, expected_radius(spec, t, w))
+
+
+def check_disk_present(rgb: np.ndarray, disk: solar.Disk) -> None:
+    h, w = rgb.shape[:2]
+    lum = rgb[..., :3].astype(np.float32).mean(axis=-1) if rgb.ndim == 3 else rgb.astype(np.float32)
+    yy, xx = np.mgrid[0:h, 0:w]
+    rr = np.hypot(xx - disk.cx, yy - disk.cy) / disk.r
+    inner = float(lum[rr < 0.9].mean())
+    ring_mask = (rr > 1.15) & (rr < 1.3) & (yy < h * 0.88)  # skip the bottom label
+    ring = float(lum[ring_mask].mean()) if ring_mask.any() else 0.0
+    if inner < DISK_MEAN_MIN or inner < DISK_CONTRAST_MIN * ring:
+        raise ValidationError(f"no disk at expected position (disk {inner:.1f}, ring {ring:.1f})")
+
+
+def validate_channel(
+    data: bytes,
+    status: int,
+    spec: SourceSpec,
+    frame_time: datetime,
+    target: datetime,
+    fit: bool,
+    fallback_disk: solar.Disk | None = None,
+) -> ValidFrame:
+    """Validate an extra channel frame.
+
+    fit=True (HMI magnetogram): Kåsa fit checked like the main frame; if it
+    fails, use `fallback_disk` (the continuum frame's disk, same instrument and
+    geometry) when given. fit=False (AIA): known geometry, see known_disk().
+    """
+    check_http(status, data)
+    check_freshness(frame_time, target)
+    rgb = decode(data)
+    disk, geometry = None, "known"
+    if fit:
+        try:
+            d = solar.fit_disk(rgb)
+            check_disk(d, spec, frame_time, rgb.shape[:2])
+            disk, geometry = d, "fit"
+        except (ValueError, ValidationError) as e:
+            if fallback_disk is None:
+                raise ValidationError(f"disk fit: {e}") from e
+            disk, geometry = fallback_disk, "continuum"
+    if disk is None:
+        disk = known_disk(spec, frame_time, rgb.shape[:2])
+    check_saturation(rgb, disk)
+    check_disk_present(rgb, disk)
+    return ValidFrame(rgb, disk, geometry)
