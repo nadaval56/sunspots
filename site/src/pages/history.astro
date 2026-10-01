@@ -6,6 +6,8 @@ interface Event {
   when: string;
   title: string;
   body: string[];
+  /** A figure that belongs to this event, rendered after its text. */
+  extra?: "galileo" | "maunder" | "cycles";
 }
 const EVENTS: Event[] = [
   {
@@ -25,6 +27,7 @@ const EVENTS: Event[] = [
       "גלילאו גליליי ענה בשלושה מכתבים לוולזר, מ-4 במאי, מ-14 באוגוסט ומ-1 בדצמבר 1612. הוא הראה שהכתמים נמצאים על פני השמש או צמוד אליהם: הם מתקצרים ומאטים ליד שולי הדיסקה, בדיוק כמו נקודה מצוירת על כדור מסתובב. מכאן הסיק שהשמש מסתובבת סביב עצמה, בערך פעם בחודש. המכתבים יצאו לאור ברומא ב-1613, בספר <i lang=\"it\" dir=\"ltr\">Istoria e dimostrazioni intorno alle macchie solari</i>.",
       "את הטיעון של גלילאו אפשר לבדוק בעצמכם במעבדת הסיבוב, כולל המחוון \"מה טען שיינר\". בהמשך שינה שיינר את דעתו וקיבל שהכתמים נמצאים על השמש עצמה.",
     ],
+    extra: "galileo",
   },
   {
     when: "1612",
@@ -41,6 +44,7 @@ const EVENTS: Event[] = [
       "במשך כ-70 שנה כמעט לא נרשמו כתמים על השמש, אף שאסטרונומים צפו בה. האסטרונום הבריטי אדוארד וולטר מאונדר הסב את תשומת הלב לתקופה הזו בסוף המאה ה-19, וג'ון אדי בדק אותה מחדש ב-1976 והראה שהשמש באמת הייתה שקטה במיוחד.",
       "התקופה הזו חופפת לחלק מ\"עידן הקרח הקטן\", שבו היו חורפים קרים במיוחד באירופה. עדיין לא ברור אם השמש השקטה גרמה לקור, וכנראה היו לו גם סיבות אחרות.",
     ],
+    extra: "maunder",
   },
   {
     when: "1843",
@@ -49,6 +53,7 @@ const EVENTS: Event[] = [
       "היינריך שוואבה, רוקח מדסאו שבגרמניה, צפה בשמש כמעט כל יום שבו היו שמיים בהירים, החל מ-1826. הוא חיפש כוכב לכת שאולי מסתובב קרוב יותר לשמש ממרקורי, ויעבור מול הדיסקה. את כוכב הלכת הוא לא מצא, אבל אחרי 17 שנים של ספירה גילה שמספר הכתמים עולה ויורד במחזור של כעשר שנים. הוא דיווח על התגלית בסיכום התצפיות שלו לשנת 1843.",
       "מדידות מאוחרות יותר הראו שהמחזור נמשך בממוצע כ-11 שנים. נתוני המחזור הנוכחי מופיעים בעמוד מחזור השמש.",
     ],
+    extra: "cycles",
   },
   {
     when: "1 בספטמבר 1859",
@@ -82,6 +87,89 @@ const EVENTS: Event[] = [
               <div class="event">
                 <h3>{e.title}</h3>
                 {e.body.map((p) => <p set:html={p} />)}
+                  {e.extra === "galileo" && (
+                    <div class="extra" id="galileo-vs-sdo">
+                      <h4>גלילאו מול SDO</h4>
+                    <p>
+                      בשורה העליונה: שני ציורים של גלילאו מיוני 1612, כפי שהודפסו בספר מ-1613. בשורה התחתונה: שתי תמונות של הלוויין SDO מספטמבר 2026.
+                      בכל שורה עובר יום אחד בין התמונה הימנית לשמאלית.
+                    </p>
+
+                    <div class="compare">
+                      <figure class="compare-row">
+                        <figcaption class="row-title">גלילאו, 1612 <span>ציור ביד, בהקרנה על דף</span></figcaption>
+                        <div class="row-imgs">
+                          <figure class="drawing">
+                            <img src={`${base}history/galileo-1612-06-28.jpg`} width="760" height="760" loading="lazy" decoding="async"
+                              alt="ציור של גלילאו מ-28 ביוני 1612: עיגול השמש עם כמה קבוצות כתמים, ובהן קבוצה מוארכת שמסומנת R." />
+                            <figcaption>28 ביוני 1612</figcaption>
+                          </figure>
+                          <figure class="drawing">
+                            <img src={`${base}history/galileo-1612-06-29.jpg`} width="760" height="760" loading="lazy" decoding="async"
+                              alt="ציור של גלילאו מ-29 ביוני 1612: הקבוצה R זזה ימינה, והכתם M שהיה בשוליים הימניים נעלם." />
+                            <figcaption>29 ביוני 1612</figcaption>
+                          </figure>
+                        </div>
+                      </figure>
+                      <figure class="compare-row">
+                        <figcaption class="row-title">SDO, ‏2026 <span>צילום מהחלל באור נראה</span></figcaption>
+                        <div class="row-imgs">
+                          <figure class="sdo">
+                            <img src={`${base}lab-archive/20260923.jpg`} width="760" height="760" loading="lazy" decoding="async"
+                              alt="תמונת השמש של SDO מ-23 בספטמבר 2026: דיסקה כתומה עם קבוצת כתמים כהים מימין למרכז." />
+                            <figcaption>23 בספטמבר 2026</figcaption>
+                          </figure>
+                          <figure class="sdo">
+                            <img src={`${base}lab-archive/20260924.jpg`} width="760" height="760" loading="lazy" decoding="async"
+                              alt="תמונת השמש של SDO מ-24 בספטמבר 2026: אותה קבוצת כתמים זזה ימינה, לכיוון השוליים." />
+                            <figcaption>24 בספטמבר 2026</figcaption>
+                          </figure>
+                        </div>
+                      </figure>
+                    </div>
+
+                    <div class="prose">
+                      <p>
+                        בציורים של גלילאו הקבוצה המסומנת R זזה ימינה מיום ליום, והכתם M, שהיה צמוד לשוליים הימניים ב-28 ביוני, כבר לא
+                        נראה ב-29 ביוני: הסיבוב של השמש העביר אותו לצד האחורי. גם בתמונות של SDO הכתמים זזים ימינה, ומתקרבים זה לזה ככל שהם מתקרבים לשוליים.
+                      </p>
+                      <p>
+                        הציורים מוצגים כפי שהודפסו, בלי סיבוב ובלי שיקוף. בשני המקורות הכתמים נעים משמאל לימין, ולכן אין צורך לשקף.
+                        אבל הציורים נעשו בהקרנה על דף, ולא ידוע לנו בדיוק איך הדף היה מכוון. לכן הצפון של השמש לא בהכרח למעלה בציור, וייתכן שהמסלולים נוטים
+                        בזווית אחרת מאשר בתמונות של SDO, שבהן הצפון תמיד למעלה.
+                      </p>
+                    </div>
+                    <p class="source">
+                      הציורים: <span lang="it" dir="ltr">Galileo Galilei, <i>Istoria e dimostrazioni intorno alle macchie solari</i></span>, רומא 1613, עמודים 84
+                      ו-85. סריקה של
+                      <span lang="fr" dir="ltr">Bibliothèque nationale de France</span> (עותק של מצפה הכוכבים של פריז), דרך <a href="https://commons.wikimedia.org/wiki/File:Illustrations_de_Istoria_e_dimostrazioni_intorno_alle_macchie_solari..._-_(Non_identifi%C3%A9)_;_Galileo_Galilei,_aut._de_texte_-_btv1b26002690_(1_of_2).jpg">Wikimedia Commons</a>,
+                      נחלת הכלל (<span lang="en" dir="ltr">Public Domain Mark 1.0</span>). חתכנו את השוליים של הדף. תמונות השמש:
+                      <span lang="en" dir="ltr">Courtesy of NASA/SDO and the HMI science team</span>. פרטים מלאים ב<a href={`${base}about/`}>אודות ומקורות</a>.
+                    </p>
+                    </div>
+                  )}
+                  {e.extra === "maunder" && (
+                    <figure class="extra chart-card panel">
+                      <figcaption class="chart-title">כמה קבוצות כתמים נראו בכל שנה, 1610 עד 1800</figcaption>
+                      <div class="charthost" id="maunder-chart"><p class="hint">טוען…</p></div>
+                      <p class="hint">
+                        כל נקודה היא הממוצע השנתי של מספר קבוצות הכתמים שנראו ביום. לפני 1645 ואחרי 1715 רואים עליות וירידות של המחזור, ובין
+                        השנים האלה המספר כמעט אפס. מהמאה ה-17 נשארו פחות תצפיות, ולכן הערכים המוקדמים פחות מדויקים.
+                      </p>
+                      <p class="source">מקור: <span lang="en" dir="ltr">WDC-SILSO, Royal Observatory of Belgium, Brussels; group number "backbone" series, Svalgaard &amp; Schatten (2016)</span></p>
+                    </figure>
+                  )}
+                  {e.extra === "cycles" && (
+                    <figure class="extra chart-card panel">
+                      <figcaption class="chart-title">ממוצע שנתי של מספר הכתמים, מ-1700 ועד היום</figcaption>
+                      <div class="charthost" id="cycles-chart"><p class="hint">טוען…</p></div>
+                      <p class="hint">
+                        כל פסגה בגרף היא שיא של מחזור. הפסגות לא באותו גובה: בשנת השיא של מחזור חזק, כמו 1957, הממוצע השנתי היה כ-270, ובמחזור חלש,
+                        כמו ב-2014, רק כ-113. גם המרחק בין פסגה לפסגה לא קבוע, ומשך מחזור נע בין כ-9 לכ-14 שנים.
+                      </p>
+                      <p class="source">מקור: <span lang="en" dir="ltr">WDC-SILSO, Royal Observatory of Belgium, Brussels</span></p>
+                    </figure>
+                  )}
               </div>
             </li>
           ))
@@ -89,67 +177,12 @@ const EVENTS: Event[] = [
       </ol>
     </section>
 
-    <section class="block" aria-labelledby="compare-title">
-      <h2 id="compare-title">גלילאו מול SDO</h2>
-      <p>
-        בשורה העליונה: שני ציורים של גלילאו מיוני 1612, כפי שהודפסו בספר מ-1613. בשורה התחתונה: שתי תמונות של הלוויין SDO מספטמבר 2026.
-        בכל שורה עובר יום אחד בין התמונה הימנית לשמאלית.
-      </p>
-
-      <div class="compare">
-        <figure class="compare-row">
-          <figcaption class="row-title">גלילאו, 1612 <span>ציור ביד, בהקרנה על דף</span></figcaption>
-          <div class="row-imgs">
-            <figure class="drawing">
-              <img src={`${base}history/galileo-1612-06-28.jpg`} width="760" height="760" loading="lazy" decoding="async"
-                alt="ציור של גלילאו מ-28 ביוני 1612: עיגול השמש עם כמה קבוצות כתמים, ובהן קבוצה מוארכת שמסומנת R." />
-              <figcaption>28 ביוני 1612</figcaption>
-            </figure>
-            <figure class="drawing">
-              <img src={`${base}history/galileo-1612-06-29.jpg`} width="760" height="760" loading="lazy" decoding="async"
-                alt="ציור של גלילאו מ-29 ביוני 1612: הקבוצה R זזה ימינה, והכתם M שהיה בשוליים הימניים נעלם." />
-              <figcaption>29 ביוני 1612</figcaption>
-            </figure>
-          </div>
-        </figure>
-        <figure class="compare-row">
-          <figcaption class="row-title">SDO, ‏2026 <span>צילום מהחלל באור נראה</span></figcaption>
-          <div class="row-imgs">
-            <figure class="sdo">
-              <img src={`${base}lab-archive/20260923.jpg`} width="760" height="760" loading="lazy" decoding="async"
-                alt="תמונת השמש של SDO מ-23 בספטמבר 2026: דיסקה כתומה עם קבוצת כתמים כהים מימין למרכז." />
-              <figcaption>23 בספטמבר 2026</figcaption>
-            </figure>
-            <figure class="sdo">
-              <img src={`${base}lab-archive/20260924.jpg`} width="760" height="760" loading="lazy" decoding="async"
-                alt="תמונת השמש של SDO מ-24 בספטמבר 2026: אותה קבוצת כתמים זזה ימינה, לכיוון השוליים." />
-              <figcaption>24 בספטמבר 2026</figcaption>
-            </figure>
-          </div>
-        </figure>
-      </div>
-
-      <div class="prose">
-        <p>
-          בציורים של גלילאו הקבוצה המסומנת R זזה ימינה מיום ליום, והכתם M, שהיה צמוד לשוליים הימניים ב-28 ביוני, כבר לא
-          נראה ב-29 ביוני: הסיבוב של השמש העביר אותו לצד האחורי. גם בתמונות של SDO הכתמים זזים ימינה, ומתקרבים זה לזה ככל שהם מתקרבים לשוליים.
-        </p>
-        <p>
-          הציורים מוצגים כפי שהודפסו, בלי סיבוב ובלי שיקוף. בשני המקורות הכתמים נעים משמאל לימין, ולכן אין צורך לשקף.
-          אבל הציורים נעשו בהקרנה על דף, ולא ידוע לנו בדיוק איך הדף היה מכוון. לכן הצפון של השמש לא בהכרח למעלה בציור, וייתכן שהמסלולים נוטים
-          בזווית אחרת מאשר בתמונות של SDO, שבהן הצפון תמיד למעלה.
-        </p>
-      </div>
-      <p class="source">
-        הציורים: <span lang="it" dir="ltr">Galileo Galilei, <i>Istoria e dimostrazioni intorno alle macchie solari</i></span>, רומא 1613, עמודים 84
-        ו-85. סריקה של
-        <span lang="fr" dir="ltr">Bibliothèque nationale de France</span> (עותק של מצפה הכוכבים של פריז), דרך <a href="https://commons.wikimedia.org/wiki/File:Illustrations_de_Istoria_e_dimostrazioni_intorno_alle_macchie_solari..._-_(Non_identifi%C3%A9)_;_Galileo_Galilei,_aut._de_texte_-_btv1b26002690_(1_of_2).jpg">Wikimedia Commons</a>,
-        נחלת הכלל (<span lang="en" dir="ltr">Public Domain Mark 1.0</span>). חתכנו את השוליים של הדף. תמונות השמש:
-        <span lang="en" dir="ltr">Courtesy of NASA/SDO and the HMI science team</span>. פרטים מלאים ב<a href={`${base}about/`}>אודות ומקורות</a>.
-      </p>
-    </section>
   </article>
 </Base>
+
+<script>
+  import "../scripts/history";
+</script>
 
 <style>
   .timeline {
@@ -195,6 +228,13 @@ const EVENTS: Event[] = [
     }
   }
 
+  .extra {
+    margin: 1.25rem 0 0;
+  }
+  .extra h4 {
+    font-size: 1.05rem;
+    margin: 0 0 0.4rem;
+  }
   .compare {
     margin: 1rem 0 1.25rem;
     background: var(--plate);
