@@ -92,7 +92,7 @@ const EVENTS: Event[] = [
                       <h4>גלילאו מול SDO</h4>
                     <p>
                       בשורה העליונה: שני ציורים של גלילאו מיוני 1612, כפי שהודפסו בספר מ-1613. בשורה התחתונה: שתי תמונות של הלוויין SDO מספטמבר 2026.
-                      בכל שורה עובר יום אחד בין התמונה הימנית לשמאלית.
+                      בכל שורה התמונה השמאלית מוקדמת ביום אחד מהימנית, כך שקוראים את השינוי משמאל לימין, באותו כיוון שבו הכתמים נעים.
                     </p>
 
                     <div class="compare">
@@ -257,7 +257,10 @@ const EVENTS: Event[] = [
     font-size: 0.9rem;
     margin-inline-start: 0.5rem;
   }
+  /* old on the left, new on the right: the spots move left→right, so the pair reads
+     the same way even in this RTL page */
   .row-imgs {
+    direction: ltr;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: clamp(0.5rem, 2vw, 1rem);
@@ -268,6 +271,9 @@ const EVENTS: Event[] = [
     height: auto;
     aspect-ratio: 1;
     border-radius: var(--radius-sm, 11px);
+  }
+  .row-imgs > figure {
+    direction: rtl;
   }
   .row-imgs figcaption {
     font-size: 0.9rem;
