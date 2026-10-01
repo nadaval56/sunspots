@@ -1,0 +1,57 @@
+// Shapes of the JSON written by the pipeline (pipeline/ingest.py, pipeline/daily.py).
+
+export interface FrameEntry {
+  t: string; // ISO UTC
+  key: string;
+  source: "jsoc" | "sdo-hmi" | "sdo-1700" | string;
+  cx: number; // 0..1 within the square crop
+  cy: number;
+  r: number;
+  b0: number; // degrees
+}
+
+export interface Manifest {
+  generated_at: string;
+  latest: FrameEntry | null;
+  fallback: boolean;
+  frames: FrameEntry[];
+}
+
+export interface Region {
+  region: number;
+  lat: number;
+  lon: number; // west positive
+  valid_at?: string | null;
+  area?: number;
+  spots?: number;
+  mcintosh?: string | null;
+  mag?: string | null;
+}
+
+export interface Today {
+  generated_at: string;
+  image: FrameEntry | null;
+  image_source: string | null;
+  fallback_banner: string | null;
+  b0: number;
+  synthetic?: boolean;
+  sunspot_number: { date: string; value: number | null } | null;
+  regions: Region[];
+  regions_source: string | null;
+  flare_probability: { date: string; c: number | null; m: number | null; x: number | null } | null;
+  xray: { latest: { t: string; flux: number; class: string }; series: [string, number][] } | null;
+  timelapse: { frames: number; from: string; to: string } | null;
+  errors: string[];
+}
+
+export interface LabFrame {
+  date: string;
+  t: string;
+  key: string;
+  jpg: string;
+  source: string;
+  cx: number;
+  cy: number;
+  r: number;
+  b0: number;
+}

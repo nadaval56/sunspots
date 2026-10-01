@@ -46,5 +46,19 @@
 ## בדיקה עיקרית: fixture מסעיף 6.5 ✅
 `tests/test_solar.py`: ‏ω=13.64°/day, ‏B̄=+3.09°, ‏P_syn=26.39d, ‏P_sid=24.61d, ‏rms=0.13°, ו-B₀(23.9 06:00)=7.03°. בלי תיקון B₀, קו הרוחב נודד ב-4.7°.
 
+## M3: שלד האתר ✅
+- `site/`: ‏Astro 7 ו-TypeScript, ‏`lang="he" dir="rtl"`, גופנים מ-fontsource (Frank Ruhl Libre, ‏Assistant, ‏IBM Plex Mono, רק subsets של עברית ולטינית), טוקנים לבהיר ולכהה, ולוח צילום כהה בשני המצבים.
+- ניווט לשבעה עמודים. דף הבית מלא, והשאר דפי "בבנייה".
+- **דף הבית** קורא את `today.json` ו-`manifest.json` בזמן ריצה: תמונה עם חותמת זמן ו"עודכן לפני", אזורים פעילים מסומנים על התמונה (מסובבים לרגע הצילום, DECISIONS #16), טבלת אזורים, מספר כתמים, הסתברויות C/M/X, גרף קרני X לוגריתמי עם crosshair ו-tooltip, טיימלאפס, באנר נפילה, וכדור הארץ בקנה מידה (גרירה או חיצים).
+- `site/src/lib/solar.ts` עובר את ה-fixture של סעיף 6.5 גם ב-TypeScript (vitest).
+- נבדק עם נתונים אמיתיים (backfill של 4 ימים, 49 פריימים מ-JSOC): ‏`astro check` נקי, אין שגיאות בקונסול, אין גלילה אופקית ב-360px, ומצב כהה נבדק בצילום מסך.
+- `deploy.yml` מוכן (מחכה ל-`PAGES_ENABLED`), ו-`ci.yml` בונה ובודק גם את האתר.
+
+**פיתוח מקומי:**
+```
+python -m pipeline.backfill --days 3 --step-hours 2
+cd site && npm install && npm run dev      # http://localhost:4321
+```
+
 ## הבא
-M3: שלד האתר ב-Astro.
+M4: המעבדה. חסר: `docs/reference/rotation-lab-prototype.html` (HUMAN_TODO #0).

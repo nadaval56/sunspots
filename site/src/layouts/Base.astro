@@ -1,0 +1,148 @@
+---
+import "@fontsource/frank-ruhl-libre/hebrew-700.css";
+import "@fontsource/frank-ruhl-libre/latin-700.css";
+import "@fontsource/assistant/hebrew-400.css";
+import "@fontsource/assistant/hebrew-600.css";
+import "@fontsource/assistant/latin-400.css";
+import "@fontsource/assistant/latin-600.css";
+import "@fontsource/ibm-plex-mono/latin-400.css";
+import "../styles/global.css";
+import { NAV, SITE_NAME, SITE_TAGLINE, CREDIT_SDO, CREDIT_NOAA } from "../config";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const { title, description = `${SITE_NAME}: ${SITE_TAGLINE}. תמונת השמש מתעדכנת כל שעה, ומעבדה למדידת סיבוב השמש.` } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+const here = Astro.url.pathname.replace(/\/?$/, "/");
+const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
+---
+
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#eef1f4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0c1117" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">דילוג לתוכן</a>
+    <header class="site-header">
+      <div class="wrap bar">
+        <a class="brand" href={base}>
+          <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="14" fill="#f39b1e" />
+            <circle cx="21" cy="13" r="2.4" fill="#2a1600" />
+            <circle cx="11.5" cy="19" r="1.5" fill="#2a1600" />
+          </svg>
+          <span>{SITE_NAME}</span>
+        </a>
+        <nav aria-label="ניווט ראשי">
+          <ul>
+            {
+              NAV.map((item) => {
+                const href = base + item.href;
+                const current = here === href;
+                return (
+                  <li>
+                    <a href={href} aria-current={current ? "page" : undefined}>
+                      {item.label}
+                    </a>
+                  </li>
+                );
+              })
+            }
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <ul class="credits">
+          <li>תמונות השמש: <span lang="en" dir="ltr">{CREDIT_SDO}</span></li>
+          <li>נתונים: <span lang="en" dir="ltr">{CREDIT_NOAA}</span></li>
+          <li><a href={`${base}about/`}>מקורות ורישוי</a></li>
+        </ul>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .site-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    padding-block: 0.75rem;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.35rem;
+    color: var(--text);
+    text-decoration: none;
+  }
+  .mark {
+    width: 28px;
+    height: 28px;
+  }
+  nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 1.1rem;
+  }
+  nav a {
+    display: inline-block;
+    padding-block: 0.35rem;
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+  }
+  nav a:hover {
+    color: var(--text);
+  }
+  nav a[aria-current="page"] {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+  main {
+    min-height: 60vh;
+  }
+  .credits {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.25rem;
+  }
+  .site-footer {
+    margin-top: 4rem;
+    padding-block: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+</style>

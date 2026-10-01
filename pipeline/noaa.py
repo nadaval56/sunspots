@@ -7,7 +7,7 @@ scripts/verify_sources.py on a runner and tighten these readers if needed.
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from . import sources
 
@@ -77,6 +77,10 @@ def parse_srs(text: str) -> dict:
                     "mag": m["mag"],
                 }
             )
+    # "Valid at 30/2400Z" in a report issued 1 Oct means 1 Oct 00:00 UTC.
+    valid_at = issued.strftime("%Y-%m-%dT00:00:00Z") if issued else None
+    for r in regions:
+        r["valid_at"] = valid_at
     return {"issued": issued.strftime("%Y-%m-%dT%H:%M:%SZ") if issued else None, "valid": valid, "regions": regions}
 
 
@@ -126,9 +130,13 @@ def regions_from_json(rows: list[dict]) -> list[dict]:
         spots = _first(r, "number_spots", "spots", default=0) or 0
         if not area and not spots:
             continue  # plage without spots
+        # observed_date D is the position at D 24:00 UTC (the 30 Sep row equals the
+        # SRS issued 1 Oct, "valid at 30/2400Z"), so the newest row is a projection.
+        valid_at = (datetime.fromisoformat(last[:10]) + timedelta(days=1)).strftime("%Y-%m-%dT00:00:00Z")
         out.append(
             {
                 "region": _first(r, "region", "region_number"),
+                "valid_at": valid_at,
                 "lat": float(lat),
                 "lon": float(lon),
                 "carrington_lon": _first(r, "carrington_longitude"),

@@ -1,0 +1,265 @@
+/* "Observation journal" (BRIEF §7.2): a dark photographic plate beside a clean
+   measurement notebook. Cool blue-grey palette, ink-blue accent, small radii. */
+
+:root {
+  color-scheme: light dark;
+
+  --font-head: "Frank Ruhl Libre", "Times New Roman", serif;
+  --font-body: "Assistant", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --surface-2: #f6f8fa;
+  --text: #17202b;
+  --muted: #4f5b69; /* 7.0:1 on --surface */
+  --border: #d3dae2;
+  --rule: #e3e8ee;
+  --accent: #0b5ea3; /* ink blue, 6.6:1 on --surface */
+  --accent-soft: #e2edf7;
+  --focus: #0b72c4;
+  --warn-bg: #fff4d6;
+  --warn-text: #5c4300;
+  --danger: #a3261a;
+
+  --chart-1: #0b72c4;
+  --chart-2: #2f8a3c;
+
+  /* the plate stays dark in both themes */
+  --plate: #05070a;
+  --plate-text: #c9d3de;
+  --track-1: #38d6ff;
+  --track-2: #7dff6a;
+
+  --radius: 2px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --maxw: 1180px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0c1117;
+    --surface: #131a22;
+    --surface-2: #18212b;
+    --text: #e2e8ef;
+    --muted: #a3afbc;
+    --border: #2a3542;
+    --rule: #202a35;
+    --accent: #6fb0ec;
+    --accent-soft: #16283a;
+    --focus: #6fb0ec;
+    --warn-bg: #3a2e0a;
+    --warn-text: #f5dc94;
+    --danger: #ff8a7a;
+    --chart-1: #3d8fd6;
+    --chart-2: #4aa65a;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-head);
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 0.5em;
+}
+h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); }
+h2 { font-size: clamp(1.35rem, 3vw, 1.75rem); }
+h3 { font-size: 1.15rem; }
+
+p { margin: 0 0 1em; }
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.18em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+img,
+video,
+svg {
+  max-width: 100%;
+}
+
+.num,
+time,
+code {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum";
+}
+
+/* numbers, times and coordinates read left-to-right inside RTL text */
+.ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.wrap {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute;
+  inset-inline-start: 8px;
+  top: -48px;
+  background: var(--surface);
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  z-index: 10;
+}
+.skip-link:focus { top: 8px; }
+
+button,
+.button {
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.4em 0.9em;
+  cursor: pointer;
+  min-height: 40px;
+}
+button:hover { border-color: var(--accent); }
+button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.label {
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.banner-warn {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  border-inline-start: 4px solid currentColor;
+  padding: 0.75rem 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- home page: elements created by src/scripts/home.ts -------------------------- */
+
+#overlay { pointer-events: none; overflow: visible; }
+#overlay.interactive .earth { pointer-events: auto; }
+
+.region-marker .ring-halo { fill: none; stroke: rgba(0, 0, 0, 0.75); stroke-width: 7; }
+.region-marker .ring { fill: none; stroke: var(--track-1); stroke-width: 3; }
+.region-label {
+  fill: #fff;
+  font-family: var(--font-mono);
+  font-size: 26px;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: #000;
+  stroke-width: 5px;
+}
+
+.earth { cursor: grab; touch-action: none; outline: none; }
+.earth:active { cursor: grabbing; }
+.earth:focus-visible .earth-body { stroke: #fff; stroke-width: 3; }
+.earth-hit { fill: transparent; }
+.earth-body { fill: #2f7fe0; stroke: #bfe1ff; stroke-width: 1.5; }
+.earth-label {
+  fill: #fff;
+  font-family: var(--font-body);
+  font-size: 24px;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: #000;
+  stroke-width: 5px;
+}
+
+.bars { display: grid; gap: 0.5rem; }
+.bar-row {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) 3.5rem;
+  align-items: center;
+  gap: 0.6rem;
+}
+.bar-key { font-weight: 600; text-align: center; }
+.bar-track { display: block; block-size: 12px; background: var(--rule); border-radius: var(--radius); }
+.bar-fill {
+  display: block;
+  block-size: 100%;
+  background: var(--chart-1);
+  border-radius: var(--radius);
+}
+.bar-val { text-align: end; direction: ltr; }
+
+.xray-svg { display: block; width: 100%; height: auto; direction: ltr; touch-action: pan-y; }
+.xray-svg .grid { stroke: var(--rule); stroke-width: 1; }
+.xray-svg .axis-label { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; text-anchor: end; }
+.xray-svg .time-label { fill: var(--muted); font-family: var(--font-mono); font-size: 11px; }
+.xray-svg .xray-line { fill: none; stroke: var(--chart-1); stroke-width: 2; stroke-linejoin: round; }
+.xray-svg .crosshair { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.xray-svg .xray-dot { fill: var(--chart-1); stroke: var(--surface); stroke-width: 2; }
+.chart-tip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+.ltr-cell { direction: ltr; text-align: end; }

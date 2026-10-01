@@ -60,7 +60,7 @@ Claude לא יכול ליצור קובץ שמרחיב את ההרשאות שלו
 ```
 
 ### 10. [ ] GitHub Pages
-**Settings**, ואז **Pages**, ותחת Source בוחרים **GitHub Actions**. אם יש דומיין: Custom domain = `<DOMAIN>`, ומוסיפים ב-Cloudflare DNS רשומות לפי https://docs.github.com/pages/configuring-a-custom-domain-for-your-github-pages-site
+**Settings**, ואז **Pages**, ותחת Source בוחרים **GitHub Actions**. אחר כך, ב-**Settings › Secrets and variables › Actions › Variables**, מוסיפים: `PAGES_ENABLED` = `true`, ו-`PUBLIC_MEDIA_BASE` = `https://media.<DOMAIN>`. אם יש דומיין, גם `SITE_URL` = `https://<DOMAIN>` ו-`SITE_BASE` = `/`. אם יש דומיין: Custom domain = `<DOMAIN>`, ומוסיפים ב-Cloudflare DNS רשומות לפי https://docs.github.com/pages/configuring-a-custom-domain-for-your-github-pages-site
 
 ### 11. [ ] לסמן כאן שסיימתם
 אחרי סעיפים 5–10, כתבו ל-Claude: "M7 מוכן". הוא יריץ את `daily` ידנית עם `backfill_days=30`, יוודא ריצה מוצלחת ראשונה, ויבדוק את האתר.

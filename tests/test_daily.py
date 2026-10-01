@@ -19,6 +19,7 @@ def test_parse_srs():
     r = srs["regions"][0]
     assert (r["lat"], r["lon"], r["area"], r["mcintosh"], r["spots"], r["mag"]) == (3, 24, 310, "Eki", 18, "Beta-Gamma")
     assert srs["regions"][2]["lat"] == -14 and srs["regions"][2]["lon"] == -35
+    assert r["valid_at"] == "2026-09-25T00:00:00Z"
 
 
 def test_parse_srs_none():
@@ -48,7 +49,8 @@ def test_regions_from_json_prefers_latest_and_skips_plage():
 def test_regions_json_longitude_is_east_positive():
     # real row shape (2026-10-01): location N08W51 with longitude -51
     rows = [{"observed_date": "2026-09-02", "region": 4518, "latitude": 8, "longitude": -51, "area": 10, "number_spots": 2}]
-    assert noaa.regions_from_json(rows)[0]["lon"] == 51
+    out = noaa.regions_from_json(rows)
+    assert out[0]["lon"] == 51 and out[0]["valid_at"] == "2026-09-03T00:00:00Z"
 
 
 def test_xray_series_long_channel_only():
