@@ -53,7 +53,11 @@ def run(
                 ingest.update_manifest(storage, new, now)
         else:
             failed += 1
-    ingest.update_manifest(storage, new, now)
+    manifest = ingest.update_manifest(storage, new, now)
+    # Extra channels are "latest only": refresh them once, for the last target.
+    ingest.run_channels(
+        storage, manifest["latest"], None, ingest.target_time(now), now, fetch or ingest.default_fetcher()
+    )
 
     archived = 0
     for i in range(archive_days if archive_days is not None else days, 0, -1):
