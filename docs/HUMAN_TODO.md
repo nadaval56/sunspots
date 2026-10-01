@@ -25,39 +25,9 @@ Claude לא יכול ליצור קובץ שמרחיב את ההרשאות שלו
 
 ## M7: חיבור לענן (כשהאתר מוכן)
 
-### 5. [ ] חשבון Cloudflare ו-bucket ב-R2
-1. נרשמים ב-https://dash.cloudflare.com (חינם).
-2. בתפריט: **R2 Object Storage**. צריך להפעיל את R2, וזה דורש אמצעי תשלום, אבל השכבה החינמית (10GB) מספיקה לפי ההערכה ב-BRIEF סעיף 3.
-3. **Create bucket**, שם: `sunspots-media`, ‏Location: Automatic.
-4. רושמים את ה-**Account ID** (מופיע בעמוד הראשי של R2).
-
-### 6. [ ] API token ל-R2
-1. ב-R2: **Manage R2 API Tokens**, ואז **Create API token**.
-2. Permissions: **Object Read & Write**, מוגבל ל-bucket `sunspots-media` בלבד.
-3. שומרים את **Access Key ID** ואת **Secret Access Key**. הם מוצגים פעם אחת בלבד.
-
-### 7. [ ] Secrets ו-Variables ב-GitHub
-ב-repo: **Settings**, אחר כך **Secrets and variables**, ואז **Actions**.
-- לשונית **Secrets**: מוסיפים `R2_ACCOUNT_ID`, ‏`R2_ACCESS_KEY_ID`, ‏`R2_SECRET_ACCESS_KEY`.
-- לשונית **Variables**: מוסיפים `R2_BUCKET` = `sunspots-media`, ‏`SUNSPOTS_DOMAIN` = הדומיין שנבחר.
-- **רק אחרי שכל השאר מוכן:** ‏`PIPELINE_ENABLED` = `true`. זה מפעיל את ה-cron של ingest ו-daily.
-
-### 8. [ ] דומיין ותת-דומיין למדיה
-1. קונים דומיין (עולה כסף) ומעבירים את ה-nameservers ל-Cloudflare לפי ההנחיות שלהם.
-2. ב-bucket: **Settings**, ואז **Custom Domains** ו-**Connect Domain**: ‏`media.<DOMAIN>`.
-
-### 9. [ ] CORS ב-R2
-ב-bucket: **Settings**, ואז **CORS Policy** ו-**Edit**. מדביקים (מחליפים את הדומיין):
-```json
-[
-  {
-    "AllowedOrigins": ["https://<DOMAIN>", "http://localhost:4321"],
-    "AllowedMethods": ["GET", "HEAD"],
-    "AllowedHeaders": ["*"],
-    "MaxAgeSeconds": 3600
-  }
-]
-```
+### 5–9. [ ] הקמת Cloudflare R2
+**המדריך המלא, צעד אחר צעד עם בדיקה בסוף: [`docs/R2_SETUP.md`](R2_SETUP.md).**
+בקצרה: חשבון, הפעלת R2, יצירת bucket ‏(Standard), כתובת ציבורית (`r2.dev` לבדיקות, ודומיין קבוע בהמשך), CORS, token ‏(Object Read & Write, ל-bucket אחד), secrets ב-GitHub, ולבסוף הרצת ה-workflow ‏`r2-check`.
 
 ### 10. [ ] GitHub Pages
 **Settings**, ואז **Pages**, ותחת Source בוחרים **GitHub Actions**. אחר כך, ב-**Settings › Secrets and variables › Actions › Variables**, מוסיפים: `PAGES_ENABLED` = `true`, ו-`PUBLIC_MEDIA_BASE` = `https://media.<DOMAIN>`. אם יש דומיין, גם `SITE_URL` = `https://<DOMAIN>` ו-`SITE_BASE` = `/`. אם יש דומיין: Custom domain = `<DOMAIN>`, ומוסיפים ב-Cloudflare DNS רשומות לפי https://docs.github.com/pages/configuring-a-custom-domain-for-your-github-pages-site
