@@ -1,0 +1,320 @@
+---
+// Hand-written. Describes what the site actually does: any new external service,
+// analytics or storage key must update this page in the same commit (docs/A11Y_PRIVACY.md).
+import Base from "../layouts/Base.astro";
+import { MEDIA_BASE, SITE_NAME } from "../config";
+
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
+const REPO = "https://github.com/nadaval56/sunspots";
+// Where live images and data come from, as built into this deployment.
+const mediaHost = /^https?:\/\//.test(MEDIA_BASE) ? new URL(MEDIA_BASE).host : null;
+---
+
+<Base
+  title="מדיניות פרטיות"
+  description="מה האתר שומר במכשיר שלכם, אילו שירותים חיצוניים מעורבים בטעינת הדפים והתמונות, ואיך למחוק הכול, עם פקדי עיון, ייצוא ומחיקה בדף עצמו."
+  extraStyles={["assets/legal.css"]}
+>
+  <article class="wrap legal-article">
+    <header>
+      <h1>מדיניות פרטיות</h1>
+      <p class="lede">
+        האתר לא אוסף עליכם מידע. אין בו עוגיות, אין בו כלי מדידה ואין בו פרסומות. מה שכן נשמר נשמר במכשיר שלכם בלבד, ואפשר לראות אותו, לייצא אותו
+        ולמחוק אותו מהדף הזה. שני שירותים חיצוניים מעורבים בכל זאת, GitHub שמגיש את הדפים ו-Cloudflare שמגיש את תמונות השמש, והם מפורטים בסעיף 5.
+      </p>
+    </header>
+
+    <section class="legal-sec" aria-labelledby="p1">
+      <h2 id="p1">1. מי מפעיל את האתר</h2>
+      <p>
+        "{SITE_NAME}" הוא אתר לימודי חינמי ולא מסחרי על כתמי השמש. אין מאחוריו חברה, אין בו מכירה ואין בו פרסומות. הקוד שלו פתוח לעיון ב-<a
+          href={REPO}
+          lang="en"
+          dir="ltr">GitHub</a
+        >.
+      </p>
+      <div class="contact">
+        <p><b>מפעיל האתר:</b> נדב אלשיך</p>
+        <p><b>דואר אלקטרוני:</b> <a href="mailto:nadaval56@gmail.com" dir="ltr">nadaval56@gmail.com</a></p>
+        <p><b>פנייה פומבית:</b> <a href={`${REPO}/issues`}>דיווח ב-GitHub Issues</a> (נראה לכולם, ודורש חשבון GitHub)</p>
+      </div>
+      <p>
+        המדיניות נכתבה כדי לקיים את חובת היידוע שבחוק הגנת הפרטיות, התשמ"א-1981, בנוסחו לאחר תיקון מס' 13, שנכנס לתוקף באוגוסט 2025.
+      </p>
+    </section>
+
+    <section class="legal-sec" aria-labelledby="p2">
+      <h2 id="p2">2. מה האתר לא עושה</h2>
+      <p>זו רשימה שלמה, וכל פריט בה נבדק בקוד של האתר.</p>
+      <ul>
+        <li>האתר אינו מבקש ואינו קולט שם, כתובת, טלפון, דואר אלקטרוני או כל פרט מזהה אחר.</li>
+        <li>אין הרשמה, אין התחברות ואין חשבון משתמש.</li>
+        <li>אין טופס יצירת קשר, אין ניוזלטר ואין רשימת תפוצה.</li>
+        <li>אין כלי מדידה: לא Google Analytics, לא Tag Manager, לא Meta Pixel ולא שום חלופה אחרת.</li>
+        <li>אין פרסומות, אין מעקב שיווקי, ואין מכירה או העברה של מידע לאף אחד.</li>
+        <li><b>אין עוגיות, אף לא אחת.</b></li>
+        <li>
+          אין קוד של צד שלישי: אין iframe, אין כפתורי שיתוף של רשתות חברתיות ואין תוסף נגישות מסחרי. תפריט הנגישות נכתב באתר עצמו ורץ ממנו.
+        </li>
+        <li>הגופנים מוגשים מהאתר עצמו, ולא מ-Google Fonts או מ-CDN חיצוני.</li>
+        <li>האתר אינו מבקש הרשאה למיקום, למצלמה, למיקרופון או להתראות.</li>
+        <li>
+          <b>הסימונים במעבדת הסיבוב לא נשמרים בשום מקום.</b> הם קיימים רק בזיכרון של הדף הפתוח, ונעלמים כשסוגרים או מרעננים אותו. החישוב כולו נעשה
+          בדפדפן, ושום דבר ממנו לא נשלח.
+        </li>
+      </ul>
+    </section>
+
+    <section class="legal-sec" aria-labelledby="p3">
+      <h2 id="p3">3. מה כן נשמר, ואיפה</h2>
+      <p>
+        <b>אחסון מקומי אינו עוגייה.</b> הוא לא נשלח לשרת עם כל בקשה, אתרים אחרים לא יכולים לקרוא אותו, והוא נשאר במכשיר שלכם. אף אחד, כולל מפעיל
+        האתר, לא יכול לקרוא אותו מרחוק.
+      </p>
+      <div class="tbl-scroll" tabindex="0" role="region" aria-label="טבלת המפתחות שנשמרים במכשיר">
+        <table class="legal-tbl">
+          <caption>כל מה שהאתר שומר במכשיר שלכם: שני מפתחות, וזה הכול</caption>
+          <thead>
+            <tr><th scope="col">מפתח</th><th scope="col">מה נשמר בו</th><th scope="col">למה</th><th scope="col">משך</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>sunspots:a11y:v1</code></td>
+              <td>הבחירות בתפריט הנגישות: גודל טקסט, מצב תצוגה והמתגים</td>
+              <td>שההתאמות יחולו בכל דף ובכל ביקור, בלי לבחור מחדש</td>
+              <td>עד שתמחקו</td>
+            </tr>
+            <tr>
+              <td><code>sunspots:privacy:v1</code></td>
+              <td>שראיתם את הודעת הפרטיות, ומה בחרתם בה</td>
+              <td>שההודעה לא תחזור, ושאפשר יהיה לכבד את הבחירה בביקור הבא</td>
+              <td>עד שתמחקו</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>המפתח שנשאר גם אם ביקשתם לא לשמור</h3>
+      <p>
+        אם תבחרו "בלי שמירה מקומית", האתר ימחק את <code>sunspots:a11y:v1</code> וישמור <b>רק</b> את <code>sunspots:privacy:v1</code>. בלעדיו האתר
+        לא יזכור בביקור הבא שביקשתם לא לשמור, ויתחיל לשמור מחדש. זה כל תפקידו.
+      </p>
+      <h3>הקידומת <code>sunspots:</code></h3>
+      <p>
+        באתרים שמתארחים ב-GitHub Pages בלי דומיין משלהם, כמה אתרים של אותו בעלים חולקים את אותו אחסון מקומי בדפדפן. הקידומת מבטיחה שהאתר הזה קורא,
+        מציג ומוחק רק את המפתחות שלו.
+      </p>
+    </section>
+
+    <section class="legal-sec" aria-labelledby="p4">
+      <h2 id="p4">4. הנתונים שלכם: עיון, ייצוא ומחיקה</h2>
+      <p>אלה לא קישורים לטופס. אלה פקדים שפועלים כאן ועכשיו, במכשיר שלכם.</p>
+      <div class="datactl">
+        <p class="st" id="dv-state">בודק…</p>
+        <div class="btn-row">
+          <button type="button" id="dv-show">מה שמור עליי?</button>
+          <button type="button" id="dv-export">ייצוא לקובץ</button>
+          <button type="button" id="dv-wipe">מחיקת הכול</button>
+          <button type="button" id="dv-toggle">טוען…</button>
+          <button type="button" id="dv-again">הצגת ההודעה מחדש</button>
+        </div>
+        <div id="dv-out" role="status" aria-live="polite"></div>
+        <noscript>
+          <p>
+            הפקדים דורשים JavaScript. אפשר גם ידנית: בהגדרות הדפדפן, תחת נתוני אתרים, מוחקים את הנתונים של הכתובת שבה האתר מתארח. בלי JavaScript
+            האתר גם לא שומר דבר.
+          </p>
+        </noscript>
+      </div>
+      <p>
+        אפשר למחוק הכול גם בלי האתר: בהגדרות הדפדפן, תחת "נתוני אתרים" או "עוגיות ונתוני אתרים", מוחקים את הנתונים של הכתובת שבה האתר מתארח.
+      </p>
+    </section>
+
+    <section class="legal-sec" aria-labelledby="p5">
+      <h2 id="p5">5. שירותים חיצוניים שמעורבים בכל זאת</h2>
+      <p>אתר שמציג תמונה עדכנית של השמש לא יכול להיות סגור לגמרי. הנה בדיוק מי מעורב, מתי, ומה הוא רואה.</p>
+
+      <h3>אחסון הדפים: GitHub Pages</h3>
+      <p>
+        הדפים עצמם מוגשים מ-GitHub Pages. כמו כל שרת אינטרנט, השרת רושם ביומנים טכניים את <b>כתובת ה-IP</b> של מי שפונה אליו, את סוג הדפדפן ואת
+        הקובץ שהתבקש. היומנים שייכים ל-GitHub. <b>מפעיל האתר לא רואה אותם ולא יכול לשלוף מהם דבר.</b> השימוש בהם כפוף ל<a
+          href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">הצהרת הפרטיות של GitHub</a
+        >.
+      </p>
+
+      <h3>תמונות השמש והנתונים החיים: Cloudflare R2</h3>
+      <p>
+        תמונת השמש של השעה האחרונה, סרטון 30 הימים, מספר הכתמים, האזורים הפעילים, נתוני קרני X ונתוני מחזור השמש מתעדכנים כל שעה או כל יום, ולכן
+        הם לא חלק מהדפים. הדפדפן שלכם מוריד אותם ישירות מאחסון ענן של Cloudflare (R2)
+        {
+          mediaHost ? (
+            <>
+              , בכתובת <span class="mono">{mediaHost}</span>
+            </>
+          ) : null
+        }. לכן גם <b>כתובת ה-IP שלכם ופרטי הדפדפן מגיעים ל-Cloudflare</b> בעת הטעינה, בכפוף ל<a
+          href="https://www.cloudflare.com/privacypolicy/">מדיניות הפרטיות של Cloudflare</a
+        >. מפעיל האתר לא מקבל מ-Cloudflare פרטים על מי שהוריד מה.
+      </p>
+      <p>
+        זה קורה בעמוד הבית, בעמוד מחזור השמש, ובמעבדה במצבים "השבוע האחרון" ו"בחירת תאריכים". במצב "ארכיון דוגמה" של המעבדה, ובשאר העמודים, כל
+        הקבצים מגיעים מהאתר עצמו.
+      </p>
+
+      <h3>קישורים יוצאים</h3>
+      <p>
+        האתר מקשר למקורות: NASA, ‏NOAA, ‏SILSO, ‏Wikimedia Commons ועוד. כשלוחצים על קישור חיצוני עוזבים את האתר, ומדיניות הפרטיות של האתר שאליו
+        הגעתם היא זו שחלה.
+      </p>
+
+      <div class="legal-note">
+        <b>איך לבדוק את זה בעצמכם:</b> פתחו את לשונית <span class="mono">Network</span> בכלי הפיתוח של הדפדפן וטענו מחדש את הדף. בעמוד הזה כל
+        הבקשות פונות לכתובת של האתר בלבד. בעמוד הבית יתווספו בקשות לאחסון התמונות{mediaHost ? <> (<span class="mono">{mediaHost}</span>)</> : null}.
+        שום דבר אחר.
+      </div>
+    </section>
+
+    <section class="legal-sec" aria-labelledby="p6">
+      <h2 id="p6">6. עוגיות</h2>
+      <p>
+        <b>האתר אינו משתמש בעוגיות כלל.</b> ההודעה שמופיעה בכניסה הראשונה אינה "באנר עוגיות" ואינה מבקשת הסכמה לאיסוף, כי אין איסוף. היא מסבירה מה
+        נשמר במכשיר ומה נטען מבחוץ, ומאפשרת לוותר גם על השמירה המקומית. האתר ממשיך לעבוד במלואו אחרי הוויתור. רק הגדרות הנגישות לא ייזכרו בין דפים
+        וביקורים.
+      </p>
+    </section>
+
+    <section class="legal-sec" aria-labelledby="p7">
+      <h2 id="p7">7. אבטחת מידע</h2>
+      <p>
+        האתר <b>אינו מנהל מאגר מידע</b>: אין שרת שאוסף, אין מסד נתונים ואין צד שרת בכלל. הדפים הם קבצים סטטיים. כל התעבורה מוצפנת ב-HTTPS, ומה
+        שנשמר במכשיר מוגן במדיניות Same-Origin של הדפדפן.
+      </p>
+    </section>
+
+    <section class="legal-sec" aria-labelledby="p8">
+      <h2 id="p8">8. הזכויות שלכם</h2>
+      <p>
+        החוק נותן זכות לעיין במידע שמוחזק עליכם, לתקן אותו ולבקש למחוק אותו. באתר הזה התשובה פשוטה: <b>אין מאגר לעיין בו, כי לא נאסף עליכם דבר.</b>
+        כל מה שקיים נמצא במכשיר שלכם, ואת הזכויות מממשים בעצמכם ומיד, בפקדים שבסעיף 4.
+      </p>
+      <p>
+        לשאלה או לטענה: <a href="mailto:nadaval56@gmail.com" dir="ltr">nadaval56@gmail.com</a>. אם התשובה לא מספקת, אפשר להגיש תלונה <a
+          href="https://www.gov.il/he/departments/the_privacy_protection_authority">לרשות להגנת הפרטיות</a
+        >.
+      </p>
+    </section>
+
+    <section class="legal-sec" aria-labelledby="p9">
+      <h2 id="p9">9. קטינים</h2>
+      <p>
+        קהל האתר כולל גם ילדים, לצד מורים וקהל כללי, ולכן לא נאסף בו שום מידע מאף אחד. אין בו מקום להקליד פרטים, אין צ'אט ואין העלאת קבצים.
+      </p>
+    </section>
+
+    <section class="legal-sec" aria-labelledby="p10">
+      <h2 id="p10">10. שינויים במדיניות</h2>
+      <p>
+        אם האתר ישתנה באופן שמשנה את תמונת הפרטיות, למשל אם יתווסף שירות חיצוני או מפתח אחסון חדש, המדיניות תעודכן <b>באותו שינוי</b>, ותאריך
+        העדכון שלמטה ישתנה.
+      </p>
+    </section>
+
+    <nav class="siblings" aria-label="מסמכים נוספים">
+      <h2>מסמכים נוספים</h2>
+      <ul>
+        <li><a href={`${base}accessibility/`}>הצהרת נגישות</a><span>ת"י 5568 · רמה AA</span></li>
+        <li><a href={`${base}about/`}>אודות ומקורות</a><span>איך האתר מתעדכן, קרדיטים ורישוי</span></li>
+      </ul>
+    </nav>
+
+    <p class="updated">עודכן לאחרונה: 1 באוקטובר 2026</p>
+
+    <div class="legal-note">
+      <b>זה לא ייעוץ משפטי.</b> המסמך מתאר מה האתר עושה ומה הוא לא עושה. הוא נכתב לפי חוק הגנת הפרטיות, התשמ"א-1981, אבל אינו חוות דעת משפטית.
+    </div>
+  </article>
+
+  <script is:inline>
+    /* Data controls. Everything happens in the browser; no network call here.
+       Runs after DOMContentLoaded, because privacy.js is loaded at the end of <body>. */
+    document.addEventListener("DOMContentLoaded", function () {
+      if (typeof PRIVACY === "undefined") return;
+      var out = document.getElementById("dv-out"),
+        st = document.getElementById("dv-state"),
+        tg = document.getElementById("dv-toggle");
+  
+      function items(n) {
+        return n === 0 ? "שום פריט" : n === 1 ? "פריט אחד" : n + " פריטים";
+      }
+      function esc(s) {
+        return String(s).replace(/[&<>]/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c];
+        });
+      }
+      function say(msg) {
+        out.innerHTML = '<p class="dv-msg">' + msg + "</p>";
+      }
+  
+      function refresh() {
+        var rows = PRIVACY.inventory(),
+          allowed = PRIVACY.storageAllowed();
+        var chars = rows.reduce(function (a, r) {
+          return a + r.size;
+        }, 0);
+        st.innerHTML = allowed
+          ? rows.length
+            ? "שמירה מקומית: <b>פעילה</b>. במכשיר הזה שמור כרגע <b>" + items(rows.length) + "</b>, בגודל כולל של <b>" + chars + "</b> תווים."
+            : "שמירה מקומית: <b>פעילה</b>, אבל עדיין לא נשמר במכשיר הזה דבר."
+          : "שמירה מקומית: <b>מבוטלת</b> לפי בקשתכם. נשמרת רק רשומת הבחירה עצמה.";
+        tg.textContent = allowed ? "ביטול השמירה המקומית" : "הפעלת השמירה המקומית";
+      }
+  
+      document.getElementById("dv-show").addEventListener("click", function () {
+        var rows = PRIVACY.inventory();
+        if (!rows.length) return say("לא שמור עליכם דבר במכשיר הזה.");
+        out.innerHTML =
+          '<p class="dv-msg">זה כל מה ששמור, ' + items(rows.length) + ':</p><pre tabindex="0">' +
+          esc(rows.map(function (r) { return r.key + "\n" + r.value; }).join("\n\n")) +
+          "</pre>";
+      });
+  
+      document.getElementById("dv-export").addEventListener("click", function () {
+        var obj = {};
+        PRIVACY.inventory().forEach(function (r) { obj[r.key] = r.value; });
+        var b = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+        var u = URL.createObjectURL(b),
+          a = document.createElement("a");
+        a.href = u;
+        a.download = "sunspots-local-data.json";
+        a.click();
+        URL.revokeObjectURL(u);
+        say("הקובץ ירד למכשיר.");
+      });
+  
+      document.getElementById("dv-wipe").addEventListener("click", function () {
+        if (!confirm("למחוק את כל מה שהאתר שמר במכשיר הזה? אי אפשר לבטל את הפעולה.")) return;
+        var n = PRIVACY.purge();
+        PRIVACY.remove(PRIVACY.KEY);
+        say("נמחק " + items(n + 1) + ". לא נשאר דבר.");
+        refresh();
+      });
+  
+      tg.addEventListener("click", function () {
+        var allowed = PRIVACY.storageAllowed();
+        if (allowed && !confirm("ביטול השמירה המקומית ימחק עכשיו את מה שנשמר. להמשיך?")) return;
+        PRIVACY.decide(!allowed);
+        say(allowed ? "השמירה בוטלה, והנתונים נמחקו." : "השמירה הופעלה מחדש.");
+        refresh();
+      });
+  
+      document.getElementById("dv-again").addEventListener("click", function () {
+        PRIVACY.reopen();
+        location.reload();
+      });
+  
+      // the notice may be answered after load, and then the numbers here are stale
+      document.addEventListener("privacy:change", refresh);
+      refresh();
+    });
+  </script>
+</Base>

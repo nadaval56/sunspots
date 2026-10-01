@@ -86,5 +86,12 @@ cd site && npm install && npm run dev      # http://localhost:4321
 - עדיין אין workflow חודשי שמרענן את `data/silso_daily.csv` ומריץ את `build_this_day` (BRIEF §4.4). כרגע מריצים ידנית.
 - כדאי שאדם יעבור על הנוסח של עמודי ההיסטוריה והבטיחות מול `content/sources.md`.
 
+## נגישות ופרטיות ✅
+- תפריט נגישות (גודל טקסט, ניגודיות גבוהה והפוכה, גווני אפור, פונט קריא, ריווח, הדגשת קישורים ומיקוד, סמן גדול, עצירת אנימציות; Alt+Shift+A) והודעת פרטיות, מ-geniza-explorer (`docs/A11Y_PRIVACY.md`, DECISIONS #39–#44).
+- עמודים חדשים: `/privacy/` (עם פקדי עיון, ייצוא ומחיקה) ו-`/accessibility/` (ת"י 5568, רמה AA, מגבלות ידועות), וקישורים אליהם בכותרת התחתונה של כל דף.
+- כל מידות הטקסט ב-rem, חוץ מטקסט SVG בתוך viewBox קבוע (מסומן `a11y-allow-px`).
+- `site/scripts/a11y-audit.mjs` עובר נקי על 8 העמודים (עם `LOCAL_MEDIA_DIR`).
+- **פתוח:** פרטי הקשר בשני הדפים הם placeholders (HUMAN_TODO 0.4).
+
 ## הבא
 M6: ‏QA ‏(Lighthouse ≥ 90 במובייל, 360px, מצב כהה).

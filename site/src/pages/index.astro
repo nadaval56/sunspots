@@ -163,15 +163,15 @@ import Base from "../layouts/Base.astro";
   .plate-tools button {
     background: transparent;
     color: var(--plate-text);
-    border-color: #3d3a35;
+    border-color: var(--plate-line);
   }
   .plate-tools button[aria-pressed="true"] {
-    background: #3a2a22;
-    border-color: #e08a6b;
+    background: var(--plate-active);
+    border-color: var(--plate-accent);
     color: #fff;
   }
   .plate .hint {
-    color: #b8b3a8;
+    color: var(--plate-muted);
   }
   .stamp {
     margin: 0.5rem 0 0;
@@ -181,7 +181,7 @@ import Base from "../layouts/Base.astro";
     white-space: nowrap;
   }
   .age {
-    color: #b8b3a8;
+    color: var(--plate-muted);
     margin-inline-start: 0.5rem;
   }
 
