@@ -16,5 +16,8 @@ export const NAV = [
   { href: "about/", label: "אודות" },
 ] as const;
 
+/** The owner's WhatsApp group: one astronomy update a day, members can't post. */
+export const WHATSAPP_GROUP = "https://chat.whatsapp.com/JPkp1hyk4J938apVTFu6J1";
+
 export const CREDIT_SDO = "Courtesy of NASA/SDO and the HMI/AIA science teams";
 export const CREDIT_NOAA = "NOAA Space Weather Prediction Center";
