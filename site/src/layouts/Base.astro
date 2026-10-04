@@ -2,7 +2,7 @@
 import "@fontsource-variable/heebo/index.css";
 import "@fontsource/ibm-plex-mono/latin-400.css";
 import "../styles/global.css";
-import { NAV, SITE_NAME, SITE_TAGLINE, CREDIT_SDO, CREDIT_NOAA } from "../config";
+import { NAV, SITE_NAME, SITE_TAGLINE, CREDIT_SDO, CREDIT_NOAA, WHATSAPP_GROUP } from "../config";
 
 interface Props {
   title?: string;
@@ -139,6 +139,19 @@ const a11yConfig = { key: A11Y_KEY, privacyUrl: `${base}privacy/`, accessibility
 
     <footer class="site-footer">
       <div class="wrap">
+        <aside class="invite" aria-labelledby="invite-title">
+          <svg class="invite-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 5.5h16v10H9l-5 4z" />
+            <path d="M12 7.6l.9 1.9 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2-1.45-1.4 2-.3z" class="star" />
+          </svg>
+          <p class="invite-text">
+            <strong id="invite-title">עדכון אסטרונומיה אחד ביום</strong>
+            <span>בקבוצת וואטסאפ שקטה: רק ההודעה היומית, בלי שיחות.</span>
+          </p>
+          <a class="invite-btn" href={WHATSAPP_GROUP} target="_blank" rel="noopener">
+            להצטרפות<span class="visually-hidden"> לקבוצת הוואטסאפ (נפתח בחלון חדש)</span>
+          </a>
+        </aside>
         <ul class="credits">
           <li>תמונות השמש: <span lang="en" dir="ltr">{CREDIT_SDO}</span></li>
           <li>נתונים: <span lang="en" dir="ltr">{CREDIT_NOAA}</span></li>
@@ -291,6 +304,60 @@ const a11yConfig = { key: A11Y_KEY, privacyUrl: `${base}privacy/`, accessibility
   }
   .legal-links {
     margin: 0.75rem 0 0;
+  }
+  .invite {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    flex-wrap: wrap;
+    margin: 0 0 1.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+  }
+  .invite-icon {
+    flex: none;
+    inline-size: 2rem;
+    block-size: 2rem;
+    fill: none;
+    stroke: var(--accent-fill);
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+  }
+  .invite-icon .star {
+    fill: #f39b1e;
+    stroke: none;
+  }
+  .invite-text {
+    flex: 1 1 14rem;
+    margin: 0;
+    line-height: 1.4;
+  }
+  .invite-text strong {
+    display: block;
+  }
+  .invite-text span {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .invite-btn {
+    flex: none;
+    padding: 0.45em 1.2em;
+    border-radius: 999px;
+    /* --accent with the page colour on it: 5:1 in light mode, 7:1 in dark */
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .invite-btn:hover {
+    filter: brightness(0.92);
+  }
+  .invite-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
   .site-footer {
     margin-top: 4rem;
