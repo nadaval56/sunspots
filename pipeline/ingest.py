@@ -212,6 +212,45 @@ def refresh_xray(storage: Storage, now: datetime | None = None) -> str | None:
     return None
 
 
+REGIONS_KEY = "regions.json"
+REGIONS_KEEP_HOURS = 36  # how long a fuller previous list beats a suspiciously short new one
+
+
+def accept_regions(new: list[dict], prev: dict | None, now: datetime) -> str | None:
+    """Why the new list must not replace prev, or None to accept it.
+
+    NOAA's feed is read hourly now, so a half-written day must not wipe markers
+    off the plate: an empty or less-than-half list is held back while the
+    previous one is under REGIONS_KEEP_HOURS old. An older day never wins."""
+    if not prev or not prev.get("regions"):
+        return None if new else "empty"
+    if new and new[0].get("valid_at", "") < prev.get("valid_at", ""):
+        return f"older than {prev['valid_at']}"
+    fresh = now - parse_iso(prev["generated_at"]) < timedelta(hours=REGIONS_KEEP_HOURS)
+    if fresh and len(new) * 2 < len(prev["regions"]):
+        return f"{len(new)} regions after {len(prev['regions'])}"
+    return None
+
+
+def refresh_regions(storage: Storage, now: datetime | None = None) -> str | None:
+    """Hourly copy of NOAA's active regions, so a region numbered during the day is
+    marked on the plate within the hour (today.json is rebuilt only once a day).
+    Returns an error message, or None. Never raises: it must not fail the ingest."""
+    if sources.synthetic_enabled():
+        return None
+    now = now or utcnow()
+    try:
+        regions = noaa.regions_from_json(noaa._get_json(noaa.URLS["regions"]))
+    except Exception as e:  # noqa: BLE001
+        return f"regions: {e}"
+    why = accept_regions(regions, get_json(storage, REGIONS_KEY), now)
+    if why:
+        return f"regions: kept the previous list ({why})"
+    valid_at = regions[0]["valid_at"] if regions else None
+    put_json(storage, REGIONS_KEY, {"generated_at": iso(now), "valid_at": valid_at, "source": "solar_regions.json", "regions": regions}, "max-age=300")
+    return None
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--target", help="ISO UTC time; default: last hour − 30 min")
@@ -220,9 +259,9 @@ def main(argv: list[str] | None = None) -> int:
     target = parse_iso(args.target) if args.target else target_time(now)
     storage = get_storage()
     entry = run(storage, target, now)
-    xray_error = refresh_xray(storage, now)
-    if xray_error:
-        print(f"ingest: {xray_error}", file=sys.stderr)
+    for error in (refresh_xray(storage, now), refresh_regions(storage, now)):
+        if error:
+            print(f"ingest: {error}", file=sys.stderr)
     if entry is None:
         print(f"ingest: no valid frame for {iso(target)}", file=sys.stderr)
         return 1
