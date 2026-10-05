@@ -2,7 +2,7 @@
 // static site never needs a rebuild for new data.
 import { MEDIA_BASE } from "../config";
 import { EARTH_RADII_PER_SUN, heliographicToPixel, synodicRate, type Disk } from "../lib/solar";
-import type { ChannelEntry, Channels, FrameEntry, Manifest, Region, Today } from "../lib/types";
+import type { ChannelEntry, Channels, FrameEntry, Manifest, Region, RegionsFile, Today } from "../lib/types";
 import { formatClock, formatLocalTime, formatUtc, relativeFromNow, TZ } from "../lib/format";
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -104,6 +104,15 @@ function setupChannels(channels: Channels | null, frame: FrameEntry) {
   pos.textContent = `1 מתוך ${all.length}`;
   note.textContent = visible.note;
   $("#channels-box").hidden = false;
+}
+
+/** regions.json is refreshed every hour by the ingest run; today.json only once a day.
+ *  Use regions.json unless it is for an older day than today.json. */
+function pickRegions(hourly: RegionsFile | null, today: Today | null): { regions: Region[]; at: Date | null } {
+  const daily = today?.regions ?? [];
+  const dailyValid = daily[0]?.valid_at ?? "";
+  if (hourly?.regions && (hourly.valid_at ?? "") >= dailyValid) return { regions: hourly.regions, at: new Date(hourly.generated_at) };
+  return { regions: daily, at: today ? new Date(today.generated_at) : null };
 }
 
 /** NOAA positions are for `valid_at`; rotate them to the moment of the image. */
@@ -208,7 +217,7 @@ function setupToggle(box: HTMLInputElement, layer: SVGGElement, onChange?: (on: 
 
 // --- the notebook -------------------------------------------------------------------
 
-function renderStats(today: Today, regions: Region[]) {
+function renderStats(today: Today, regions: Region[], regionsAt: Date | null) {
   if (today.sunspot_number) {
     $("#ssn").textContent = String(today.sunspot_number.value ?? "—");
     $("#ssn-date").textContent = today.sunspot_number.date
@@ -216,6 +225,11 @@ function renderStats(today: Today, regions: Region[]) {
       : "";
   }
   $("#region-count").textContent = String(regions.length);
+  if (regionsAt) {
+    const when = $("#regions-when");
+    when.textContent = `הרשימה עודכנה ב-${formatClock(regionsAt)} (שעון ישראל).`;
+    when.hidden = false;
+  }
 
   // R = 10g + s with today's NOAA regions, so the formula has real numbers in it.
   const g = regions.length;
@@ -223,14 +237,17 @@ function renderStats(today: Today, regions: Region[]) {
   if (g > 0 && regions.every((r) => typeof r.spots === "number")) {
     const R = 10 * g + s;
     const official = today.sunspot_number?.value;
+    const ssnDay = today.sunspot_number?.date
+      ? new Date(today.sunspot_number.date + "T12:00:00Z").toLocaleDateString("he-IL", { day: "numeric", month: "long" })
+      : "";
     const box = $("#ssn-worked");
     box.innerHTML =
       `<b>היום:</b> ${g === 1 ? "קבוצה אחת" : `${g} קבוצות`} ו-${s} כתמים, ולכן ` +
       `<span class="num" dir="ltr">10 × ${g} + ${s} = ${R}</span>.` +
       (typeof official === "number"
         ? official === R
-          ? " בדיוק המספר הרשמי של היום."
-          : ` המספר הרשמי של היום הוא ${official}.`
+          ? " בדיוק המספר הרשמי האחרון."
+          : ` המספר הרשמי האחרון${ssnDay ? ` (${ssnDay})` : ""} הוא ${official}.`
         : "");
     box.hidden = false;
   }
@@ -434,11 +451,12 @@ function renderTimelapse(today: Today) {
 // --- main ------------------------------------------------------------------------------
 
 async function main() {
-  const [today, manifest, channels, xray] = await Promise.all([
+  const [today, manifest, channels, xray, hourlyRegions] = await Promise.all([
     getJSON<Today>("today.json"),
     getJSON<Manifest>("manifest.json"),
     getJSON<Channels>("latest/channels.json"),
     getJSON<Xray & { generated_at: string }>("xray.json"),
+    getJSON<RegionsFile>("regions.json"),
   ]);
   const frame = manifest?.latest ?? today?.image ?? null;
   if (!today && !frame) {
@@ -457,7 +475,8 @@ async function main() {
   if (today?.synthetic) $("#synthetic-note").hidden = false;
 
   const svg = $<SVGSVGElement>("#overlay");
-  const regions = regionsAt(today?.regions ?? [], frame);
+  const picked = pickRegions(hourlyRegions, today);
+  const regions = regionsAt(picked.regions, frame);
   if (frame) {
     renderImage(frame);
     if (frame.source !== "sdo-1700") setupChannels(channels, frame);
@@ -470,7 +489,7 @@ async function main() {
   }
   if (today || xray) renderXray(xray, today?.xray);
   if (today) {
-    renderStats(today, regions);
+    renderStats(today, regions, picked.at);
     renderFlareBars(today);
     renderTimelapse(today);
   }

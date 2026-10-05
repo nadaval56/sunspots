@@ -84,6 +84,7 @@ import Base from "../layouts/Base.astro";
 
         <section aria-labelledby="regions-title">
           <h2 id="regions-title" class="h3">אזורים פעילים</h2>
+          <p id="regions-when" class="sub" hidden></p>
           <div class="table-scroll">
             <table id="regions-table">
               <caption class="visually-hidden">אזורים פעילים על השמש לפי NOAA</caption>
@@ -99,7 +100,7 @@ import Base from "../layouts/Base.astro";
               <tbody></tbody>
             </table>
           </div>
-          <p class="hint">המיקומים הם לרגע שבו צולמה התמונה. שטח: במיליוניות של חצי כדור השמש. N/S הם קו רוחב צפוני/דרומי, ו-E/W הם מזרח/מערב ממרכז הדיסקה.</p>
+          <p class="hint">המיקומים הם לרגע שבו צולמה התמונה. הרשימה מ-NOAA ומתעדכנת פעם בשעה, ולכן אזור חדש שקיבל מספר במהלך היום יכול להופיע כאן לפני שהוא נכלל במספר הכתמים היומי. שטח: במיליוניות של חצי כדור השמש. N/S הם קו רוחב צפוני/דרומי, ו-E/W הם מזרח/מערב ממרכז הדיסקה.</p>
         </section>
 
         <section aria-labelledby="flare-title">

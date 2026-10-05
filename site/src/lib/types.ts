@@ -48,6 +48,14 @@ export interface Region {
   mag?: string | null;
 }
 
+/** regions.json: NOAA's active regions, refreshed by the hourly ingest. */
+export interface RegionsFile {
+  generated_at: string;
+  valid_at: string | null;
+  source: string;
+  regions: Region[];
+}
+
 export interface Today {
   generated_at: string;
   image: FrameEntry | null;

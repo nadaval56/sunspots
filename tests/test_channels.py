@@ -212,3 +212,49 @@ def test_xray_series_keeps_only_the_last_hours():
     rows = [{"time_tag": f"2026-09-{d:02d}T{h:02d}:00:00Z", "energy": "0.1-0.8nm", "flux": 1e-7} for d in (28, 29, 30) for h in range(24)]
     x = noaa.xray_series(rows, step=1, hours=49)
     assert x["series"][0][0] == "2026-09-28T22:00:00Z" and x["latest"]["t"] == "2026-09-30T23:00:00Z"
+
+
+# --- hourly active regions ---------------------------------------------------------------
+
+def _rows(date: str, regions: list[int]) -> list[dict]:
+    return [{"observed_date": date, "region": n, "location": "N10E13", "area": 20, "number_spots": 4} for n in regions]
+
+
+def _regions(store, monkeypatch, rows, now=T):
+    monkeypatch.setattr(sources, "synthetic_enabled", lambda: False)
+    monkeypatch.setattr(ingest.noaa, "_get_json", lambda url: rows)
+    return ingest.refresh_regions(store, now)
+
+
+def test_refresh_regions_picks_up_a_region_numbered_during_the_day(store, monkeypatch):
+    assert _regions(store, monkeypatch, _rows("2026-10-04", [4545, 4546, 4547, 4548])) is None
+    later = _rows("2026-10-04", [4545, 4546, 4547, 4548]) + _rows("2026-10-05", [4544, 4545, 4546, 4547, 4548, 4549])
+    assert _regions(store, monkeypatch, later, T + timedelta(hours=9)) is None
+    r = json.loads(store.get(ingest.REGIONS_KEY))
+    assert 4549 in [x["region"] for x in r["regions"]] and r["valid_at"] == "2026-10-06T00:00:00Z"
+    assert r["generated_at"] == ingest.iso(T + timedelta(hours=9))
+
+
+def test_refresh_regions_holds_back_a_partial_update(store, monkeypatch):
+    _regions(store, monkeypatch, _rows("2026-10-04", [4545, 4546, 4547, 4548, 4549]))
+    err = _regions(store, monkeypatch, _rows("2026-10-05", [4549]), T + timedelta(hours=1))
+    assert "kept the previous" in err
+    assert len(json.loads(store.get(ingest.REGIONS_KEY))["regions"]) == 5
+    # a day and a half later the short list is believed: regions do rotate off
+    assert _regions(store, monkeypatch, _rows("2026-10-05", [4549]), T + timedelta(hours=40)) is None
+    assert len(json.loads(store.get(ingest.REGIONS_KEY))["regions"]) == 1
+
+
+def test_refresh_regions_never_goes_back_a_day(store, monkeypatch):
+    _regions(store, monkeypatch, _rows("2026-10-05", [4549]))
+    assert "older" in _regions(store, monkeypatch, _rows("2026-10-04", [4545, 4546]), T + timedelta(hours=1))
+
+
+def test_refresh_regions_failure_is_reported_not_raised(store, monkeypatch):
+    def boom(url):
+        raise ConnectionError("NOAA down")
+
+    monkeypatch.setattr(sources, "synthetic_enabled", lambda: False)
+    monkeypatch.setattr(ingest.noaa, "_get_json", boom)
+    assert "NOAA down" in ingest.refresh_regions(store, T)
+    assert store.get(ingest.REGIONS_KEY) is None
