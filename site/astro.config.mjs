@@ -32,7 +32,7 @@ function serveLocalMedia() {
 }
 
 export default defineConfig({
-  site: process.env.SITE_URL ?? "https://sunspots.example",
+  site: process.env.SITE_URL ?? "https://sunspots.co.il",
   base: process.env.SITE_BASE ?? "/",
   trailingSlash: "ignore",
   devToolbar: { enabled: false },

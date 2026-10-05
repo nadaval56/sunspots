@@ -24,7 +24,7 @@ Claude לא יכול ליצור קובץ שמרחיב את ההרשאות שלו
 
 ### 4. [ ] להחליט על שם ודומיין
 - ~~שם האתר~~: נבחר "השמש היום" ✅
-- דומיין: עד שיוחלט, הקוד משתמש ב-`sunspots.example`.
+- ~~דומיין~~: נקנה `sunspots.co.il` (MyNames, DNS ב-Cloudflare) ✅
 
 ### 4.5 [x] גיבוי לתזמון: cron-job.org
 GitHub מריץ workflows מתוזמנים באיחור ולפעמים מדלג. לכן cron-job.org מפעיל את `ingest` פעם בשעה דרך ה-API (משימה `sunspots ingest`, ‏POST ל-`.../actions/workflows/ingest.yml/dispatches` עם `{"ref":"main"}`). ריצת הבדיקה ב-1.10.2026 החזירה 204, והריצה ב-GitHub הצליחה.

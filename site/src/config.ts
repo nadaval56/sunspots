@@ -4,7 +4,7 @@ export const SITE_TAGLINE = "כתמי השמש, יום אחר יום";
 
 /** Where today.json, manifest.json, frames and the timelapse live.
  *  Dev: served from ../media-local by astro.config.mjs.
- *  Production: PUBLIC_MEDIA_BASE, e.g. https://media.sunspots.example */
+ *  Production: PUBLIC_MEDIA_BASE, https://media.sunspots.co.il */
 export const MEDIA_BASE = (import.meta.env.PUBLIC_MEDIA_BASE ?? "/media").replace(/\/$/, "");
 
 export const NAV = [

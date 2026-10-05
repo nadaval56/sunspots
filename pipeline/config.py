@@ -4,7 +4,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-DOMAIN = os.environ.get("SUNSPOTS_DOMAIN", "sunspots.example")
+DOMAIN = os.environ.get("SUNSPOTS_DOMAIN", "sunspots.co.il")
 USER_AGENT = f"SunspotsEdu/1.0 (+https://{DOMAIN}/about)"
 
 STORAGE = os.environ.get("STORAGE", "local")  # local | r2
