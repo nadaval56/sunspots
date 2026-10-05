@@ -125,7 +125,7 @@ p{margin-top:22px;font-size:30px;line-height:1.35;color:#c9c1b4;text-wrap:pretty
   <div class="brand">${mark}<span>השמש היום</span></div>
   <h1>${c.title}</h1>
   <p>${c.sub}</p>
-  <div class="url">nadaval56.github.io/sunspots</div>
+  <div class="url">sunspots.co.il</div>
 </div>
 <div class="bar"></div>
 </body></html>`;

@@ -22,7 +22,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "site/src/data"
-UA = {"User-Agent": "SunspotsEdu/1.0 (+https://sunspots.example/about)"}
+UA = {"User-Agent": "SunspotsEdu/1.0 (+https://sunspots.co.il/about)"}
 SN_URL = "https://www.sidc.be/SILSO/DATA/SN_y_tot_V2.0.csv"
 GN_URL = "https://www.sidc.be/SILSO/DATA/GroupNumber/GNbb2_y.txt"
 
