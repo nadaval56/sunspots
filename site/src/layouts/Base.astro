@@ -2,6 +2,7 @@
 import "@fontsource-variable/heebo/index.css";
 import "@fontsource/ibm-plex-mono/latin-400.css";
 import "../styles/global.css";
+import SisterSites from "../components/SisterSites.astro";
 import { NAV, SITE_NAME, SITE_TAGLINE, CREDIT_SDO, CREDIT_NOAA, WHATSAPP_GROUP } from "../config";
 
 interface Props {
@@ -147,6 +148,7 @@ const a11yConfig = { key: A11Y_KEY, privacyUrl: `${base}privacy/`, accessibility
         <p class="legal-links">
           <a href={`${base}privacy/`}>מדיניות פרטיות</a> · <a href={`${base}accessibility/`}>הצהרת נגישות</a>
         </p>
+        <SisterSites />
         <aside class="invite" aria-labelledby="invite-title">
           <svg class="invite-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 5.5h16v10H9l-5 4z" />
